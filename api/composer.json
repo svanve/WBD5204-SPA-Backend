@@ -1,0 +1,9 @@
+{
+    "name": "silvtheonandonly/api",
+    "autoload": {
+        "psr-4": {
+            "WBD5204\\": "src/"
+        }
+    },
+    "require": {}
+}

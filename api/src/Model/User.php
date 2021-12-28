@@ -1,0 +1,216 @@
+<?php
+
+namespace WBD5204\Model;
+
+use WBD5204\Model as AbstractModel;
+
+final class User extends AbstractModel {
+    
+    public function emailExists( ?string $email ) : bool {
+        /** @var string $query */
+        $query = 'SELECT email FROM users WHERE email = :email';
+
+        /** @var \PDOStatement $statement */
+        $statement = $this->Database->prepare( $query );
+        $statement->bindValue( 'email', $email );
+        $statement->execute();
+
+        /** @var array $results */
+        $results = $statement->fetchAll();
+
+        return count($results) > 0;
+    }
+
+    public function usernameExists( ?string $username ) : bool {
+        /**  @var string $query */
+        $query = 'SELECT username FROM users WHERE :username = username';
+
+        /** @var \PDOStatement $statement */
+        $statement = $this->Database->prepare( $query );
+        $statement->bindValue( ':username', $username );
+        $statement->execute();
+
+        /** @var array $results */
+        $results = $statement->fetchAll();
+
+        return count($results) > 0;
+    }
+
+    public function register( array &$errors = [] ) : bool {
+        
+        $input_username = filter_input( INPUT_POST, 'username');
+        $input_email = filter_input( INPUT_POST, 'email');
+        $input_password = filter_input( INPUT_POST, 'password');
+        $input_password_repeat = filter_input( INPUT_POST, 'password_repeat');
+
+        /** @var bool $validate_username */
+        $validate_username = $this->validateUsername( $errors, $input_username);
+        /** @var bool $validate_email */
+        $validate_email = $this->validateEmail( $errors, $input_email);
+        /** @var bool $validate_password */
+        $validate_password = $this->validatePassword( $errors, $input_password, $input_password_repeat);
+
+
+        if($validate_username && $validate_email && $validate_password) {
+            /** @var string $hashed_salt */
+            $hashed_salt = $this->createHashedSalt();
+            /** @var string $hashed_password */
+            $hashed_password = $this->createHashedPassword( $input_password, $hashed_salt );
+
+            /** @var string $query */
+            $query = 'INSERT INTO users (username, email, password, salt) VALUES (:username, :email, :password, :salt)';
+
+            /** @var \PDOStatement $statement */
+            $statement = $this->Database->prepare( $query );
+            $statement->bindValue(':username', $input_username);
+            $statement->bindValue(':email', $input_email);
+            $statement->bindValue(':password', $hashed_password);
+            $statement->bindValue(':salt', $hashed_salt);
+            $statement->execute();
+
+            return $statement->rowCount() > 0;
+        }
+        else {
+            return FALSE;
+        }
+    }
+
+    public function login( array $errors ) : bool {
+        /** @var ?string $input_username */
+        $input_username = filter_input( INPUT_POST, 'username');
+        /** @var ?string $input_password */
+        $input_password = filter_input( INPUT_POST, 'password');
+
+        /** @var bool $validate_username */
+        $validate_username = empty($input_username) === FALSE;
+        /** @var bool $validate_password */
+        $validate_password = empty($input_password) === FALSE;
+
+        if ( $validate_username || $validate_password ) {
+            /** @var array $credentials */
+            $credentials = $this->getCredentials( $input_username );
+            /** @var bool $compare_passwords */
+            $compare_passwords = $this->comparePasswords( $credentials, $input_password );
+
+            if( !$compare_passwords ) {
+                return $errors['password'][] = 'Der Username oder das Passwort ist falsch.';
+            }
+
+            return $compare_passwords;
+        }
+        else {
+            if( !$validate_username ) {
+                $errors['username'][] = 'Bitte gib deinen Usernamen ein.';
+            }
+            if( !$validate_password ) {
+                $errors['password'][] = 'Bitte gib dein Passwort ein.';
+            }
+
+            return FALSE;
+        }
+    }
+
+    public function validateUsername( array &$errors, ?string $username ) : bool {
+        if (is_null($username) || empty($username)) {
+            $errors['username'][] = 'Bitte gib einen Username ein.';
+        }
+        if (strlen($username) < 4) {
+            $errors['username'][] = 'Der Username sollte mindestens 4 Zeichen lang sein.';
+        }
+        if (strlen($username) > 16) {
+            $errors['username'][] = 'Der Username sollt maximal 16 Zeichen lang sein.';
+        }
+        if (preg_match( '/[^a-z_0-9]/', $username)) {
+            $errors['username'][] = 'Der Username sollte nur alphanumerische Zeichen enthalten.';
+        }
+        if ($this->usernameExists( $username )) {
+            $errors['username'][] = 'Der Username existiert bereits.';
+        }
+
+        return isset($errors[ 'username' ]) === FALSE || count($errors[ 'username' ]) === 0;
+    }
+
+    public function validateEmail( array &$errors, ?string $email) : bool {
+        if (empty($email)) {
+            $errors['email'][] = 'Bitte gib eine Emailadresse ein.';
+        }
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE) {
+            $errors['email'][] = 'Bitte gib eine gültige Emailadresse ein.';
+        }
+        if ($this->emailExists($email)) {
+            $errors['email'][] = 'Die eingegebene Emailadresse existiert bereits.';
+        }
+
+        return isset( $errors['email'] ) === FALSE || count($errors['email']) === 0;
+    }
+
+    public function validatePassword( array &$errors, ?string $password, ?string $password_repeat ) : bool {
+        if (empty($password)) {
+            $errors['password'][] = 'Bitte gib ein Passwort ein.';
+        }
+        if (strlen($password) < 8 ) {
+            $errors['password'][] = 'Dein Passwort sollte mindestens 8 Zeichen lang sein.';
+        }
+        if (strlen($password) > 64) {
+            $errors['password'][] = 'Dein Passwort sollte maximal 64 Zeichen lang sein.';
+        }
+        if (preg_match('/\s/', $password)) {
+            $errors['password'][] = 'Das Passwort sollte keine Leerzeichen enthalten.';
+        }
+        if (!preg_match('/[a-z]/', $password)) {
+            $errors['password'][] = 'Das Passwort sollte mindestens einen Kleinbuchstaben enthalten.';
+        }
+        if (!preg_match('/[A-Z]/', $password)) {
+            $errors['password'][] = 'Das Passwort sollte mindestens einen Grossbuchstaben enthalten.';
+        }
+        if (!preg_match('/[\d]/', $password)) {
+            $errors['password'][] = 'Das Passwort sollte mindestens eine Zahl enthalten.';
+        }
+        if (!preg_match('/\W/', $password)) {
+            $errors['password'][] = 'Das Passwort sollte mindestens ein Sonderzeichen enthalten.';
+        }
+        if (empty($password_repeat)) {
+            $errors['password'][] = "Bitte gib das Passwort im Feld 'Passwort wiederholen' ein.";
+        }
+        if ($password !== $password_repeat) {
+            $errors['password'][] = 'Bitte gib das Passwort im Feld \'Passwort wiederholen\' ein.';
+        }
+
+        return  ( isset($errors['password'])        === FALSE || count($errors['password'])         === 0 ) &&
+                ( isset($errors['password_repeat']) === FALSE || count($errors['password_repeat'])  === 0 );
+    }
+
+    
+    public function createHashedSalt() : string {
+        $rand = rand(1234, 9876);
+        $time = time();
+        
+        return hash( 'sha512', "{$time} - {$rand}");
+    }
+    
+    public function createHashedPassword( string $password, string $salt) : string {
+        
+        return $hashed_password = hash( 'sha512', "{$password}{$salt}");
+    }
+
+    public function getCredentials( string $username ) : array {
+        /** @var string $query */
+        $query = 'SELECT id, password, salt FROM users WHERE username = :username';
+    
+        /** @var \PDOStatement $statement  */
+        $statement = $this->Database->prepare( $query );
+        $statement->bindValue(':username', $username );
+        $statement->execute();
+    
+        return $statement->fetch();
+    }
+
+    public function comparePasswords( array $credentials, string $user_input ) : bool { 
+        /** @var string $hashed_salt */
+        $hashed_salt = $credentials['salt'];
+        /** @var strign $hashed_password */
+        $hashed_password = $credentials['password'];
+
+        return $hashed_password === $this->createHashedPassword($user_input, $hashed_salt);
+    }
+}
