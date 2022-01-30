@@ -1,0 +1,108 @@
+$headingHoverColor: blue;
+$btn-text-color: white;
+$btn-br: 6px;
+
+@import "./bootstrap.scss";
+@import "./header.scss";
+@import "./menubar.scss";
+@import "./tasks.scss";
+@import "./detailbar.scss";
+
+*, *::before, *::after {
+    list-style: none !important;
+    text-decoration: none !important;
+    margin: 0;
+    padding: 0;
+}
+
+#page-wrapper {
+    display: flex;
+}
+
+.m-0-auto {
+    margin: 0 auto;
+}
+
+.error {
+    margin-bottom: 5px;
+    margin-top: 10px;
+}
+
+.submit-btn-color { 
+    color: white !important;
+}
+
+#step-count-btn:hover {
+    background-color: $gray-200;
+}
+
+.activated {
+    background-color: $gray-200;
+}
+
+#teaser-text {
+    p {
+        font-size: 1.2rem;
+    }
+}
+
+#teaser-picture {
+    img {
+        width: 100%;
+        object-fit: cover;
+    }
+}
+
+#teaser-div {
+    width: inherit;
+    p, h1 {
+        hyphens: auto;
+    }
+}
+
+.form-instruction {
+    color: $gray-600;
+    font-style: italic;
+}
+
+.li-title {
+    font-weight: bold;
+}
+
+#add-mate {
+    flex: 1 1 auto;
+}
+
+.error-last {
+    margin-top: -6px;
+}
+
+#message-wrap {
+    width: 94vw;
+    padding-left: 6vw;
+}
+
+@media only screen and (max-width: 992px) {
+    #message-wrap {
+        padding-left: 12vw;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    #message-wrap {
+        padding-left: 16vw;
+    }
+
+    #flat-input-container, #flat-members-container {
+        width: 84vw !important;
+        margin: 2vw !important;
+    }
+
+    #flat-input-container div {
+        flex-direction: column;
+
+        input {
+            margin: 5px !important;
+        }
+    }
+}

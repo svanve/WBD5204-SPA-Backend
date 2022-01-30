@@ -1,0 +1,39 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 50px 10px 50px;
+    align-items: center;
+    min-height: 8vh;
+
+    #logo-container {
+        display: flex;
+        align-items: center;
+        
+        p {
+            margin: 10px 0 0 15px;
+            font-size: 21px;
+            color: white;
+        }
+    }
+    img {
+        height: 50px;
+    }
+    .btn {
+        border-radius: $btn-br;
+        color: white;
+
+        a {
+            color: inherit !important;
+        }
+    } 
+}
+
+.messages {
+    text-align: center;
+}
+
+@media screen and (max-width: 576px) {
+    .header {
+        padding: 9px;
+    }
+}
