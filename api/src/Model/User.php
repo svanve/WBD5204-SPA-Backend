@@ -42,6 +42,7 @@ final class User extends AbstractModel {
         $input_email = filter_input( INPUT_POST, 'email');
         $input_password = filter_input( INPUT_POST, 'password');
         $input_password_repeat = filter_input( INPUT_POST, 'password_repeat');
+        $input_image = filter_input(INPUT_POST, 'image');
 
         /** @var bool $validate_username */
         $validate_username = $this->validateUsername( $errors, $input_username);
@@ -117,11 +118,12 @@ final class User extends AbstractModel {
         if (strlen($username) < 4) {
             $errors['username'][] = 'Der Username sollte mindestens 4 Zeichen lang sein.';
         }
-        if (strlen($username) > 16) {
-            $errors['username'][] = 'Der Username sollt maximal 16 Zeichen lang sein.';
+        if (strlen($username) > 20) {
+            $errors['username'][] = 'Der Username sollte maximal 16 Zeichen lang sein.';
         }
-        if (preg_match( '/[^a-z_0-9]/', $username)) {
-            $errors['username'][] = 'Der Username sollte nur alphanumerische Zeichen enthalten.';
+        // TODO! preg_match
+        if (!preg_match( '/[a-zA-Z0-9]{3,30}/g', $username)) {
+            $errors['username'][] = "Der Username sollte nur Zahlen und Buchstaben enthalten.";
         }
         if ($this->usernameExists( $username )) {
             $errors['username'][] = 'Der Username existiert bereits.';

@@ -1,38 +1,54 @@
 <?php
 
-namespace WBD5204;
+namespace WBD5204\Controller;
 
 use WBD5204\Controller as AbstractController;
-use WBD5204\Model\Quizes as QuizModel;
+use WBD5204\Model\Challenges as ChallengeModel;
 
-final class Quizes extends AbstractController {
+final class Challenges extends AbstractController {
+
+    private $challenge;
+
     public function __construct() {
-        $this->QuizModel = new QuizModel();
+        $this->challenge = new ChallengeModel();
     }
 
     public function write () : void {
         /** @var array $errors */
         $errors = [];
 
-        if ($this->QuizModel->write( $errors )) {
-            $this->response_code(200);
+        if ($this->challenge->write( $errors )) {
+            $this->responseCode(200);
             $this->printJSON( ['success' => true] );
         } else {
-            $this->response_code(400);
+            $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] );
         }
     }
 
-    public function delete() : void {
+    public function delete( int $id ) : void {
         /** @var array $errors */
         $errors = [];
 
-        if ($this->QuizModel->delete( $errors )) {
+        if ($this->challenge->delete( $errors )) {
+            $this->responseCode(200);
+            $this->printJSON( ['success' => true] );
+        } else {
+            $this->responseCode(400);
+            $this->printJSON( ['errors' => $errors] );
+        }
+    }
+
+    public function read( int $id ) : void {
+        /** @var array $errors */
+        $errors = [];
+
+        if ($this->challenge->getChallengeById( $id )) {
             $this->response_code(200);
             $this->printJSON( ['success' => true] );
         } else {
-            $this->response_code(400);
-            $this->printJSON( ['errors' => $errors] );
+            $this->respopnse_code(400);
+            $this->printJSON( ['errors' => $errors] ); 
         }
     }
 

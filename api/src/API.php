@@ -15,7 +15,6 @@ final class API {
     }
 
     public function run() : void {
-        // ToDo: Session Class builden
         Session::start();
 
         // URL auslesen
