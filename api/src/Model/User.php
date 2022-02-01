@@ -97,7 +97,13 @@ final class User extends AbstractModel {
                 return $errors['password'][] = 'Der Username oder das Passwort ist falsch.';
             }
 
-            return $compare_passwords;
+            $_SESSION["user_id"] = $user_id;
+
+            var_dump(isset($_SESSION['user_id']));
+
+            return $compare_passwords && isset($_SESSION['user_id']);
+
+            // TODO: $_SESSION["user_id"] = $user_id;
         }
         else {
             if( !$validate_username ) {
@@ -122,7 +128,7 @@ final class User extends AbstractModel {
             $errors['username'][] = 'Der Username sollte maximal 16 Zeichen lang sein.';
         }
         // TODO! preg_match
-        if (!preg_match( '/[a-zA-Z0-9]{3,30}/g', $username)) {
+        if (!preg_match( '/[a-zA-Z0-9]{3,30}/', $username)) {
             $errors['username'][] = "Der Username sollte nur Zahlen und Buchstaben enthalten.";
         }
         if ($this->usernameExists( $username )) {

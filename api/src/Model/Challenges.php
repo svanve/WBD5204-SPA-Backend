@@ -50,11 +50,9 @@ final class Challenges extends AbstractModel {
             $statement->bindValue( ':description',  $inout_description );
             $statement->execute();
 
-            return TRUE;
+            return $statement->rowCount() > 0;
 
         } else {
-
-            $errors['write'][] = ['inputData' => 'Bitte fülle alle Challenge-Felder aus.'];
             
             return FALSE;
 
