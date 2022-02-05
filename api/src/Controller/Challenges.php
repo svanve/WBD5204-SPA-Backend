@@ -7,8 +7,6 @@ use WBD5204\Model\Challenges as ChallengeModel;
 
 final class Challenges extends AbstractController {
 
-    private $challenge;
-
     public function __construct() {
         $this->challenge = new ChallengeModel();
     }

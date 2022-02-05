@@ -76,7 +76,7 @@ final class User extends AbstractModel {
         }
     }
 
-    public function login( array $errors ) : bool {
+    public function login( array &$errors = [] ) : bool {
         /** @var ?string $input_username */
         $input_username = filter_input( INPUT_POST, 'username');
         /** @var ?string $input_password */
@@ -89,7 +89,7 @@ final class User extends AbstractModel {
 
         if ( $validate_username || $validate_password ) {
             /** @var array $credentials */
-            $credentials = $this->getCredentials( $input_username );
+            $credentials = $this->getCredentials( $input_username ) || [];
             /** @var bool $compare_passwords */
             $compare_passwords = $this->comparePasswords( $credentials, $input_password );
 
@@ -97,13 +97,9 @@ final class User extends AbstractModel {
                 return $errors['password'][] = 'Der Username oder das Passwort ist falsch.';
             }
 
-            $_SESSION["user_id"] = $user_id;
+            $_SESSION["user_id"] = $this->getUserId( $input_username );
 
-            var_dump(isset($_SESSION['user_id']));
-
-            return $compare_passwords && isset($_SESSION['user_id']);
-
-            // TODO: $_SESSION["user_id"] = $user_id;
+            return $compare_passwords && !empty($_SESSION['user_id']);
         }
         else {
             if( !$validate_username ) {
@@ -113,6 +109,22 @@ final class User extends AbstractModel {
                 $errors['password'][] = 'Bitte gib dein Passwort ein.';
             }
 
+            return FALSE;
+        }
+    }
+
+    public function logout( array &$errors = [], array &$success = [] ) : bool {
+
+        unset($_SESSION['user_id']);
+
+        if (!isset($_SESSION['user_id'])) {
+            $success['logout]'][] = 'Du wurdest erfolgreich ausgeloggt.';
+            
+            return TRUE;
+        } 
+        else {
+            $errors['logout'][] = 'Es gab ein Problem beim Ausloggen.';
+            
             return FALSE;
         }
     }
@@ -220,5 +232,17 @@ final class User extends AbstractModel {
         $hashed_password = $credentials['password'];
 
         return $hashed_password === $this->createHashedPassword($user_input, $hashed_salt);
+    }
+
+    public function getUserId( string $username ) : int {
+        /** @var string $query */
+        $query = 'SELECT id FROM users WHERE username = :username';
+
+        /** @var \PDOStatement $statement  */
+        $statement = $this->Database->prepare( $query );
+        $statement->bindValue( ':username', $username );
+        $statement->execute();
+
+        return $statement->fetch()['id'];
     }
 }

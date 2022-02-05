@@ -3,7 +3,6 @@
 namespace WBD5204\Model;
 
 use WBD5204\Model as AbstractModel;
-use \PDOStatement;
 
 final class Challenges extends AbstractModel {
     
@@ -12,7 +11,7 @@ final class Challenges extends AbstractModel {
     // Wie läuft das mit der id? woher kommt sie in den constructor?
 
     public function __construct() {
-        $this->user_id = 2;
+        $this->user_id = $_SESSION['user_id'];
     }
     
     public function write( array &$errors = [] ) : bool {
@@ -62,48 +61,69 @@ final class Challenges extends AbstractModel {
 
     }
 
-    public function getChallengeById( int $challengeId ) : array {
+    public function getChallengeById( int $challenge_id ) : bool {
         
-        $query = 'SELECT * FROM challenges WHERE id = :id';
-        $statement = $this->database->prepare( $query );
-        $statement->bindValue( ':id', $challengeId );
+        $query = 
+            'SELECT 
+                title, 
+                description, 
+                
+                u.username, 
+                
+                p.name, 
+                p.level, 
+                p.image,
+                
+                q.question_level, 
+                q.content, 
+                q.right_answer, 
+                q.wrong_answer_1, 
+                q.wrong_answer_2, 
+                q.wrong_answer_3
+
+            FROM challenges AS c
+            
+            INNER JOIN users AS u
+                ON c.author_id = u.id
+            
+            INNER JOIN pokemons AS p
+                ON c.pokemon_id = p.id
+            
+            INNER JOIN questions AS q
+                ON c.question_id = q.id
+            
+            WHERE c.id = :id';
+        
+        $statement = $this->Database->prepare( $query );
+        $statement->bindValue( ':id', $challenge_id );
         $statement->execute();
         $challengeResults = $statement->fetch(PDO::FETCH_ASSOC);
+        
+        
+
         // if( count($challengeResults) <= 0 ) throw new Error('No Challenges returned.');
-        
-
-        // STEP 1: get question_content, question_level using question_id
-        $query = 'SELECT content, question_level FROM questions WHERE id = :id';
-        $statement = $this->Database->prepare( $query );
-        $statement->bindValue( ':id', $challengeResults['question_id']);
-        $questionResults = $statement->fetch(PDO::FETCH_ASSOC);
-        // if( count($questionResults) <= 0 ) throw new Error('No questions returned.');
-
-        
-        // STEP 2: get name, image and level of pokemon using pokemon_id
-        $query = 'SELECT * FROM pokemons WHERE id = :id';
-        $statement = $this->Database->prepare( $query );
-        $statement->bindValue( ':id', $challengeResults['pokemon_id']);
-        $pokemonResults = $statement->fetch(PDO::FETCH_ASSOC);
-        // if( count($pokemonResults) <= 0 ) throw new Error('No pokemon returned.');
-        
-        // the higher the pokemons level, the reward (question_level equals the challenges reward)
-
-        // STEP 3: get name of user by user_id
-        $query = 'SELECT name, image FROM pokemons WHERE id = :id';
-        $statement = $this->Database->prepare( $query );
-        $statement->bindValue( ':id', $this->user_id );
 
         // STEP 4: return challenge with title, description, content, image, name, question_level (reward), user_id
 
         return $challengeData = [
             'title' => $challengeResults['title'],
-            'description' => $questionResults['description'],
-            'content' => $questionResults['content'],
-            'image' => $pokemonResults['image'],
-            'title' => $pokemonResults['name'],
-            'title' => $pokemonResults['title']
+            'description' => $challengeResults['description'],
+            'username' => $challengeResults['username'],
+            'pokemon_name' => $challengeResults['pokemon_name'],
+            'pokemon_level' => $challengeResults['pokemon_level'],
+            'pokemon_image' => $challengeResults['pokemon_image'],
+            'content' => $challengeResults['content'],
+
+
+
+            'image' => $challengeResults['image'],
+            'title' => $challengeResults['name'],
+            'title' => $challengeResults['title']
         ];
+
+        // output data
+
+        // send bool flag
     }
 
     public function delete( array $challengeId ) : bool {
