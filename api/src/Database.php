@@ -8,7 +8,10 @@ final class Database extends \PDO {
         /** @var string $dsn */
         $dsn = sprintf(
             'mysql:host=%1$s;port=%2$s;dbname=%3$s;charset=%4$s;',
-            DB_HOST, DB_PORT, DB_NAME, DB_CHARSET
+            DB_HOST, 
+            DB_PORT, 
+            DB_NAME, 
+            DB_CHARSET
         );
 
         /** @var string $db_user */

@@ -89,17 +89,24 @@ final class User extends AbstractModel {
 
         if ( $validate_username || $validate_password ) {
             /** @var array $credentials */
-            $credentials = $this->getCredentials( $input_username ) || [];
+            $credentials = $this->getCredentials( $input_username );
+
+            if ( empty($credentials) ) {
+                $errors['password'][] = 'Der Username oder das Passwort ist falsch.';
+                return FALSE;
+            }
+
             /** @var bool $compare_passwords */
             $compare_passwords = $this->comparePasswords( $credentials, $input_password );
 
             if( !$compare_passwords ) {
-                return $errors['password'][] = 'Der Username oder das Passwort ist falsch.';
+                $errors['password'][] = 'Der Username oder das Passwort ist falsch.';
+                return $compare_passwords;
             }
 
             $_SESSION["user_id"] = $this->getUserId( $input_username );
 
-            return $compare_passwords && !empty($_SESSION['user_id']);
+            return $compare_passwords;
         }
         else {
             if( !$validate_username ) {
@@ -118,7 +125,7 @@ final class User extends AbstractModel {
         unset($_SESSION['user_id']);
 
         if (!isset($_SESSION['user_id'])) {
-            $success['logout]'][] = 'Du wurdest erfolgreich ausgeloggt.';
+            $success['logout'][] = 'Du wurdest erfolgreich ausgeloggt.';
             
             return TRUE;
         } 
@@ -221,8 +228,13 @@ final class User extends AbstractModel {
         $statement = $this->Database->prepare( $query );
         $statement->bindValue(':username', $username );
         $statement->execute();
-    
-        return $statement->fetch();
+
+        $result = $statement->fetch(); 
+
+        if ( $result === FALSE ) {
+            return [];
+        }
+        return $result;
     }
 
     public function comparePasswords( array $credentials, string $user_input ) : bool { 

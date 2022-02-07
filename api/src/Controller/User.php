@@ -11,18 +11,17 @@ final class User extends AbstractController {
         $this->user = new UserModel();
     }
 
-    //
+    // @POST
     public function login() : void {
         /** @var array $errors */
         $errors = [];
 
-        if($this->user->login($errors)) {
+        if( $this->isMethod(self::METHOD_POST) && $this->user->login($errors) ) {
             $this->responseCode( 200 );
             $this->printJSON( ['success' => true] );
         } 
         else {
             $this->responseCode( 400 );
-            var_dump($errors);
             $this->printJSON( ['errors' => $errors] );
         }
     }
@@ -32,8 +31,8 @@ final class User extends AbstractController {
         /** @var array $errors */
         $errors = [];
 
-        if($this->user->register($errors)) {
-            $this->responseCode( 200 );
+        if($this->isMethod(self::METHOD_POST) && $this->user->register($errors)) {
+            $this->responseCode( 201 );
             $this->printJSON( ['success' => true] );
         }
         else {
@@ -42,21 +41,20 @@ final class User extends AbstractController {
         }
     }
 
-    // @PATCH
+    // @PUT
     public function logout() : void {
         /** @var array $errors */
         $errors = [];
         /** @var array $success */
         $success = [];
 
-        if($this->user->logout($errors)) {
+        if($this->isMethod(self::METHOD_PUT) && $this->user->logout( $errors, $success )) {
             $this->responseCode( 200 );
-            var_dump($success);
-            $this->printJSON( ['success' => $success['logout']] );
+            $this->printJSON( ['success' => $success ] );
         }
         else {
             $this->responseCode( 400 );
-            $this->printJSON( ['errors' => $errors['logout']] );
+            $this->printJSON( ['errors' => $errors ] );
         }
     }
 }

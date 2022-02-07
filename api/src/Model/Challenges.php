@@ -5,70 +5,39 @@ namespace WBD5204\Model;
 use WBD5204\Model as AbstractModel;
 
 final class Challenges extends AbstractModel {
-    
-    private $user_id;
 
-    // Wie läuft das mit der id? woher kommt sie in den constructor?
+    public function delete( array $errors, ?string $challenge_id ) : bool {
+        /** @var bool $validate_challenge_id */
+        $validate_challenge_id = validateChallengeId( $errors, $challenge_id );
 
-    public function __construct() {
-        $this->user_id = $_SESSION['user_id'];
-    }
-    
-    public function write( array &$errors = [] ) : bool {
+        if ( $validate_challenge_id ) {
+            /** @var string $query */
+            $query = 'DELETE FROM challenges WHERE id = :id';
 
-        //get input
-        /** @var ?string $input_pokemon */
-        $input_pokemon = filter_input( INPUT_POST, 'pokemon_id');
-        /** @var ?string $input_question */
-        $input_question = filter_input( INPUT_POST, 'question_id');
-        /** @var ?string $input_title */
-        $input_title = filter_input( INPUT_POST, 'title');
-        /** @var ?string $input_description */
-        $input_description = filter_input( INPUT_POST, 'description');
-
-        /** @var bool $validate_pokemon */
-        $validate_pokemon = empty($input_pokemon) === FALSE || is_null($input_pokemon === FALSE);
-        /** @var bool $validate_question */
-        $validate_question = empty($input_question) === FALSE || is_null($input_question === FALSE);
-        /** @var bool $validate_title */
-        $validate_title = $this->validateTitle($errors, $input_title);
-        /** @var bool $validate_description */
-        $validate_description = $this->validateDescription($errors, $input_description);
-
-        var_dump(empty($input_pokemon));
-
-        if ($validate_pokemon && $validate_question && $validate_title && $validate_description === TRUE) {
-
-            /** @var \PDOStatement $query */
-            $query = 'INSERT INTO challenges (pokemon_id, question_id, title, description, user_id) VALUES (:pokemon_id, :question_id, :title, :description, :user_id)';
-            $statement = $this->Database->prepare( $query );
-            $statement->bindValue( ':user_id',      $this->user_id );
-            $statement->bindValue( ':pokemon',      $input_pokemon );
-            $statement->bindValue( ':question',     $input_question );
-            $statement->bindValue( ':title',        $input_title );
-            $statement->bindValue( ':description',  $inout_description );
+            /** @var \PDOStatement $statement */
+            $statement = $this->Database->prepare($query);
+            $statement->bindValue( ':id', $challenge_id );
             $statement->execute();
 
             return $statement->rowCount() > 0;
-
         } else {
-            
             return FALSE;
-
         }
-        
-        // Wie kann ich hier einen error abfangen? :: try{}catch(){} um PDOStatement?
-
     }
 
-    public function getChallengeById( int $challenge_id ) : bool {
-        
-        $query = 
+    public function getChallengeById( array &$errors, array &$result, int $challenge_id ) : bool {
+        /** @var bool $validate_challenge_id */
+        $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
+
+        if ($validate_challenge_id) {
+
+            $query = 
             'SELECT 
                 title, 
                 description, 
                 
-                u.username, 
+                u.username,
+                u.picture, 
                 
                 p.name, 
                 p.level, 
@@ -94,42 +63,99 @@ final class Challenges extends AbstractModel {
             
             WHERE c.id = :id';
         
-        $statement = $this->Database->prepare( $query );
-        $statement->bindValue( ':id', $challenge_id );
-        $statement->execute();
-        $challengeResults = $statement->fetch(PDO::FETCH_ASSOC);
-        
-        
+            $statement = $this->Database->prepare( $query );
+            $statement->bindValue( ':id', $challenge_id );
+            $statement->execute();
 
-        // if( count($challengeResults) <= 0 ) throw new Error('No Challenges returned.');
+            $result = $statement->fetch();
 
-        // STEP 4: return challenge with title, description, content, image, name, question_level (reward), user_id
+            return count( $result ) > 0;
 
-        return $challengeData = [
-            'title' => $challengeResults['title'],
-            'description' => $challengeResults['description'],
-            'username' => $challengeResults['username'],
-            'pokemon_name' => $challengeResults['pokemon_name'],
-            'pokemon_level' => $challengeResults['pokemon_level'],
-            'pokemon_image' => $challengeResults['pokemon_image'],
-            'content' => $challengeResults['content'],
+        } else {
 
-
-
-            'image' => $challengeResults['image'],
-            'title' => $challengeResults['name'],
-            'title' => $challengeResults['title']
-        ];
-
-        // output data
-
-        // send bool flag
+            return FALSE;
+        }
     }
 
-    public function delete( array $challengeId ) : bool {
+    public function getAllChallenges( array &$errors, array &$results ) : bool {
+
+        $query = 
+        'SELECT 
+            title, 
+            description, 
+            
+            u.username,
+            u.picture, 
+            
+            p.name, 
+            p.level, 
+            p.image,
+            
+            q.question_level, 
+            q.content, 
+            q.right_answer, 
+            q.wrong_answer_1, 
+            q.wrong_answer_2, 
+            q.wrong_answer_3
+
+        FROM challenges AS c
         
-        //$this->userId;
-        // DELETE FROM (DB)
+        INNER JOIN users AS u
+            ON c.author_id = u.id
+        
+        INNER JOIN pokemons AS p
+            ON c.pokemon_id = p.id
+        
+        INNER JOIN questions AS q
+            ON c.question_id = q.id';
+    
+        $statement = $this->Database->prepare( $query );
+        $statement->execute();
+
+        $results = $statement->fetchAll();
+
+        return count( $results ) > 0;
+    }
+
+    public function update( array &$errors, ?string $challenge_id ) : bool {
+        /** @var array $form_data */
+        $form_data = $this->getFormData();
+        /** @var ?string $input_title */
+        $input_title = $form_data[ 'title' ] ?? NULL;
+        /** @var ?string $input_description */
+        $input_description = $form_data[ 'description' ] ?? NULL;
+        /** @var ?string $input_pokemon_id */
+        $input_pokemon_id = $form_data[ 'pokemon_id' ] ?? NULL;
+        /** @var ?string $input_question_id */
+        $input_question_id = $form_data[ 'question_id' ] ?? NULL;
+
+        /** @var bool $validate_title */
+        $validate_title = $this->validateTitle( $errors, $input_title );
+        /** @var bool $validate_description */
+        $validate_description = $this->validateDescription( $errors, $input_description );
+        /** @var bool $validate_pokemon_id */
+        $validate_pokemon_id = $this->validatePokemonId( $errors, $input_pokemon_id ); 
+        /** @var bool $validate_question_id */
+        $validate_question_id = $this->validateQuestionId( $errors, $input_question_id ); 
+        /** @var bool $validate_challenge_id */
+        $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
+
+        if ( $validate_challenge_id && $validate_title && $validate_description && $validate_pokemon_id && $validate_question_id ) {
+            /** @var string $query */
+            $query = 'UPDATE challenges SET title = :title, description = :description, pokemon_id = :pokemon_id, question_id = :question_id WHERE id = :id';
+            /** @var \PDOStatement $statement */
+            $statement = $this->Database->prepare( $query );
+            $statement->bindValue( 'title', $input_title );
+            $statement->bindValue( 'description', $input_description );
+            $statement->bindValue( 'pokemon_id', $input_pokemon_id );
+            $statement->bindValue( 'question_id', $input_question_id );
+            $statement->bindValue( 'id', $challenge_id );
+            $statement->execute();
+
+            return $statement->rowCount() > 0;
+        } else {
+            return FALSE;
+        }
     }
 
     // Wohin gehört diese Funktion?
@@ -138,21 +164,13 @@ final class Challenges extends AbstractModel {
         
     }
 
-
-    private function validateTitle( array &$errors, ?string $title ) : bool {
-        if (is_null($title) || empty($title)) {
-            $errors['title'][] = 'Bitte gib einen Titel für die Challenge ein.';
-        }
-        if (strlen($title) > 40) {
-            $errors['title'][] = 'Der Titel sollte maxmimal 40 Zeichen lang sein.';
-        }
-        if (strlen($title) < 5) {
-            $errors['title'][] = 'Der Titel sollte mindestens 5 Zeichen lang sein.';
+    private function validateChallengeId( array &$errors, ?string $challenge_id ) : bool {
+        if ( empty( $challenge_id ) ) {
+            $errors['challenge_id'][] = 'Bitte gib eine Challenge-ID an';
         }
 
-        return isset($errors[ 'title' ]) === FALSE || count($errors[ 'title' ]) === 0;
+        return isset($errors[ 'challenge_id' ]) === FALSE || count($errors[ 'challenge_id' ]) === 0;
     }
-
 
     private function validateDescription( array &$errors, ?string $description ) : bool {
         if (is_null($description) || empty($description)) {
@@ -168,19 +186,90 @@ final class Challenges extends AbstractModel {
         return isset($errors[ 'description' ]) === FALSE || count($errors[ 'description' ]) === 0;
     }
 
-    
-    // private function getQuizData( int $id ) : array {
-    //     /** @var string $query */
-    //     $query = 'SELECT pokemon, question, title, description FROM quizes WHERE :id = id';
+    private function validatePokemonID( array &$errors, ?string $pokemon_id ) : bool {
+        if ( is_null($pokemon_id) || empty($pokemon_id) ) {
+            $errors['pokemon_id'][] = 'Bitte gib eine Pokemon-ID an';
+        }
 
-    //     /** @var \PDOStatement $statement */
-    //     $statement = $this->Database->prepare( $query );
-    //     $statement->bindValue( 'id', $id );
-    //     $statement->execute();
+        return isset($errors[ 'pokemon_id' ]) === FALSE || count($errors[ 'pokemon_id' ]) === 0;
+    }
 
-    //     /** @var array $results */
-    //     $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+    private function validateTitle( array &$errors, ?string $title ) : bool {
+        if (is_null($title) || empty($title)) {
+            $errors['title'][] = 'Bitte gib einen Titel für die Challenge ein.';
+        }
+        if (strlen($title) > 40) {
+            $errors['title'][] = 'Der Titel sollte maxmimal 40 Zeichen lang sein.';
+        }
+        if (strlen($title) < 5) {
+            $errors['title'][] = 'Der Titel sollte mindestens 5 Zeichen lang sein.';
+        }
 
-    //     return $results;
-    // }
+        return isset($errors[ 'title' ]) === FALSE || count($errors[ 'title' ]) === 0;
+    }
+
+    private function validateQuestionId( array &$errors, ?string $question_id ) : bool {
+        if ( is_null($question_id) || empty($question_id) ) {
+            $errors['question_id'][] = 'Bitte gib eine Question-ID an.';
+        }
+
+        return isset($errors[ 'question_id' ]) === FALSE || count($errors[ 'question_id' ]) === 0;
+    }
+
+    private function validateUserId( array &$errors, ?int $user_id ) : bool {
+        if ( is_null($user_id) || empty($user_id)) {
+            $errors['user_id'][] = 'Du musst eingeloggt sein, um eine Challenge zu erstellen.';
+        } 
+
+        return isset($errors['user_id']) === FALSE || count($errors['user_id']) === 0;
+    }
+
+    public function write( array &$errors = [] ) : bool {
+
+        //get user_id
+        /** @var ?int $user_id */
+        $user_id = $this->user_id ?? NULL;
+
+        //get input
+        /** @var ?string $input_pokemon_id */
+        $input_pokemon_id = filter_input( INPUT_POST, 'pokemon_id');
+        /** @var ?string $input_question_id */
+        $input_question_id = filter_input( INPUT_POST, 'question_id');
+        /** @var ?string $input_title */
+        $input_title = filter_input( INPUT_POST, 'title');
+        /** @var ?string $input_description */
+        $input_description = filter_input( INPUT_POST, 'description');
+
+        /** @var bool $validate_user_id */
+        $validate_user_id = $this->validateUserId( $errors, $user_id );
+        /** @var bool $validate_pokemon */
+        $validate_pokemon_id = empty($input_pokemon_id) === FALSE || is_null($input_pokemon_id === FALSE);
+        /** @var bool $validate_question */
+        $validate_question_id = empty($input_question_id) === FALSE || is_null($input_question_id === FALSE);
+        /** @var bool $validate_title */
+        $validate_title = $this->validateTitle($errors, $input_title);
+        /** @var bool $validate_description */
+        $validate_description = $this->validateDescription($errors, $input_description);
+
+        if ($validate_user_id && $validate_pokemon_id && $validate_question_id && $validate_title && $validate_description === TRUE) {
+
+            /** @var \PDOStatement $query */
+            $query = 'INSERT INTO challenges (pokemon_id, question_id, title, description, author_id) VALUES (:pokemon_id, :question_id, :title, :description, :author_id)';
+            $statement = $this->Database->prepare( $query );
+            $statement->bindValue( ':author_id',      $user_id );
+            $statement->bindValue( ':pokemon_id',      $input_pokemon_id );
+            $statement->bindValue( ':question_id',     $input_question_id );
+            $statement->bindValue( ':title',        $input_title );
+            $statement->bindValue( ':description',  $input_description );
+            $statement->execute();
+
+            return $statement->rowCount() > 0;
+
+        } else {
+            
+            return FALSE;
+
+        }
+
+    }
 }
