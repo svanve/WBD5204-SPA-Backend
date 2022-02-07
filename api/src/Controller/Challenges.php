@@ -11,7 +11,7 @@ final class Challenges extends AbstractController {
         $this->ChallengeModel = new ChallengeModel();
     }
 
-    // @POST // ready yet?
+    // @POST
     public function write () : void {
         /** @var array $errors */
         $errors = [];
@@ -25,12 +25,12 @@ final class Challenges extends AbstractController {
         }
     }
 
-    // @DELETE // not ready yet
+    // @DELETE
     public function delete( ?string $challenge_id = NULL ) : void {
         /** @var array $errors */
         $errors = [];
 
-        if ($this->isMethod( self::METHOD_DELETE ) && $this->ChallengeModel->delete( $errors, $challenge_id )) {
+        if ($this->isMethod( self::METHOD_DELETE ) && $this->ChallengeModel->deleteChallenge( $errors, $challenge_id )) {
             $this->responseCode(200);
             $this->printJSON( ['success' => true] );
         } else {
@@ -55,7 +55,7 @@ final class Challenges extends AbstractController {
         }
     }
 
-    // @GET // not ready yet?
+    // @GET 
     public function get( ?string $challenge_id = NULL ) : void {
         /** @var array $errors */
         $errors = [];
@@ -72,7 +72,7 @@ final class Challenges extends AbstractController {
         }
     }
 
-    // @UPDATE // not ready yet
+    // @UPDATE
     public function update( ?string $challenge_id = NULL) {
         /** @var array $errors */
         $errors = [];

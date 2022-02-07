@@ -6,9 +6,9 @@ use WBD5204\Model as AbstractModel;
 
 final class Challenges extends AbstractModel {
 
-    public function delete( array $errors, ?string $challenge_id ) : bool {
+    public function deleteChallenge( array $errors, ?string $challenge_id ) : bool {
         /** @var bool $validate_challenge_id */
-        $validate_challenge_id = validateChallengeId( $errors, $challenge_id );
+        $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
 
         if ( $validate_challenge_id ) {
             /** @var string $query */
@@ -20,6 +20,7 @@ final class Challenges extends AbstractModel {
             $statement->execute();
 
             return $statement->rowCount() > 0;
+
         } else {
             return FALSE;
         }
@@ -165,7 +166,7 @@ final class Challenges extends AbstractModel {
     }
 
     private function validateChallengeId( array &$errors, ?string $challenge_id ) : bool {
-        if ( empty( $challenge_id ) ) {
+        if ( is_null($challenge_id) || empty( $challenge_id ) ) {
             $errors['challenge_id'][] = 'Bitte gib eine Challenge-ID an';
         }
 
