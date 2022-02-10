@@ -9,3 +9,8 @@ define('DB_CHARSET', 'UTF8');
 define('DB_NAME', 'wbd5204_vl2');
 define('DB_USER', 'root');
 define('DB_PASS', 'root');
+
+// Image File Directories
+define('UPLOADS_DIR', 'uploads');
+define('UPLOADS_PATH', __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . UPLOADS_DIR);
+define('UPLOADS_URI', 'http://localhost:8888/' . UPLOADS_DIR);
