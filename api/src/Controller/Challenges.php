@@ -26,7 +26,7 @@ final class Challenges extends AbstractController {
     }
 
     // @DELETE
-    public function delete( ?string $challenge_id = NULL ) : void {
+    public function delete( ?int $challenge_id = NULL ) : void {
         /** @var array $errors */
         $errors = [];
 
@@ -56,7 +56,7 @@ final class Challenges extends AbstractController {
     }
 
     // @GET 
-    public function get( ?string $challenge_id = NULL ) : void {
+    public function get( ?int $challenge_id = NULL ) : void {
         /** @var array $errors */
         $errors = [];
         /** @var array $data */
@@ -73,7 +73,7 @@ final class Challenges extends AbstractController {
     }
 
     // @UPDATE
-    public function update( ?string $challenge_id = NULL) {
+    public function update( ?int $challenge_id = NULL) {
         /** @var array $errors */
         $errors = [];
 

@@ -8,6 +8,87 @@ final class Images extends AbstractModel {
 
     const UPLOADS_DIR = UPLOADS_DIR;
 
+    private function createDateCodedPath() : string {
+        /** @var string $date */
+        $date = date( 'Y.m.d', time() );
+        /** @var array $code */
+        $code = explode( '.', $date );
+        /** @var string $path */
+        $path = implode( DIRECTORY_SEPARATOR, $code );
+
+        return $path;
+    }
+
+    private function createFolder( string $dir ) : bool {
+        if ( file_exists( $dir ) === FALSE ) {
+
+            return (bool) mkdir( $dir, 0777, TRUE );
+        }
+
+        return TRUE;
+    }    
+
+    private function insertIntoDatabase( array &$errors, array &$result ) : bool {
+        $filename = $result[ 'filename' ];
+
+        /** @var string $query */
+        $query = 'INSERT INTO images ( filename ) VALUES ( :filename );';
+
+        /** @var \PDOStatement $statement */
+        $statement = $this->Database->prepare( $query );
+        $statement->bindValue( ':filename', $filename );
+        $statement->execute();
+
+        $result[ 'id' ] = $this->Database->lastInsertId();
+
+        return $result[ 'id' ] !== '0' && $statement->rowCount() > 0;
+    } 
+
+    public function getImagePath( array &$errors, array &$result, ?int $image_id ) : bool {
+        /** @var bool $validate_image_id */
+        $validate_image_id = $this->validateImageId( $errors, $image_id );
+
+        if ( $validate_image_id ) {
+            /** @var string $query */
+            $query = 'SELECT filename FROM images WHERE id = :id';
+
+            /** @var \PDOStatement statement */
+            $statement = $this->Database->prepare( $query );
+            $statement->bindValue( ':id', $image_id );
+            $statement->execute();
+
+            $sql_result = $statement->fetch(); 
+            
+            if ( !count( $sql_result ) > 0 ) {
+                return FALSE;
+            }
+
+            $result = $this->parseResult( $sql_result[ 'filename' ] );
+
+            return TRUE;
+
+        } else {
+
+            return FALSE;
+        }
+    }
+
+    private function parseResult( string $result_string ) : string {
+
+        return $result = str_replace( '\\', DIRECTORY_SEPARATOR, $result_string );
+    }
+
+    private function sanitizeImageExt( string $image_type ) : ?string {
+        switch( $image_type ) {
+            case IMAGETYPE_JPEG:
+                return '.jpeg';
+            case IMAGETYPE_PNG:
+                return '.png';
+            default:
+                return NULL;
+        }
+    }
+
     public function uploadImage( array &$errors, array &$result ) : bool {
         $validate_image_file = $this->validateImageFile( $errors );
 
@@ -28,14 +109,13 @@ final class Images extends AbstractModel {
             /** @var ?string $image_ext */
             $image_ext = $this->sanitizeImageExt( $image_type );
             /** @var string $date_coded_path */
-            $date_coded_path = $this->createDataCodedPath();
+            $date_coded_path = $this->createDateCodedPath();
             /** @var string $target_image_name */
             $target_image_name = str_replace( $temp_image_ext, '', $temp_image_id ) . "-" . time();
 
+
             /** @var string $target_image_path */
             $target_image_path = $date_coded_path . DIRECTORY_SEPARATOR . $target_image_name . $image_ext;
-            /** @var string $target_image_path */
-            $target_thumbnail_path = $date_coded_path . DIRECTORY_SEPARATOR . $target_image_name . '-thumbnail' . $image_ext;
 
             // wenn tagesordner noch nicht existiert, dann einen neuen (mkdir)
             if ( $this->createFolder( UPLOADS_PATH . DIRECTORY_SEPARATOR . $date_coded_path ) === FALSE ) {
@@ -44,18 +124,14 @@ final class Images extends AbstractModel {
                 return FALSE;
             }
 
-            if ( $this->createImage( $errors, $target_image_path ) ) {
-                $result[ 'filename' ] = $target_image_name;
-                $result[ 'image' ] = [
-                    'src'   =>  UPLOADS_URI . "/{$date_coded_path}/{$target_image_name}{$image_ext}"
-                ];
-            }
+            /** @var string $current_path */
+            $current_path = $temp_image_file;
+            /** @var string $target_path */
+            $target_path = UPLOADS_PATH . DIRECTORY_SEPARATOR . $target_image_path;
 
-            if ( $this->createThumbnail( $errors, $target_thumbnail_path ) ) {
-                $result[ 'thumbnail' ] = [
-                    'src'   =>  UPLOADS_URI . "/{$date_coded_path}/{$target_image_name}-thumbnail{$image_ext}"
-                ];
-            }
+            move_uploaded_file( $current_path, $target_path );
+
+            $result[ 'filename' ] = $target_image_path;
 
             if ( $this->insertIntoDatabase( $errors, $result ) === FALSE ) {
                 $errors[ 'image' ][] = 'Failed to insert into Database';
@@ -63,144 +139,13 @@ final class Images extends AbstractModel {
                 return FALSE;
             }
 
-            return isset( $result[ 'id' ] ) && isset( $result[ 'image' ] ) && isset( $result[ 'thumbnail' ] );
+            var_dump( isset( $result[ 'id' ] ) );
+
+            return isset( $result[ 'id' ] );
         }
         else {
 
             return FALSE;
-        }
-    }
-
-    private function insertIntoDatabase( array &$errors, array &$result ) : bool {
-        $filename = $result[ 'filename' ];
-        $image_src = $result[ 'image' ][ 'src' ];
-        $thumbnail_src = $result[ 'thumbnail' ][ 'src' ];
-
-        /** @var string $query */
-        $query = 'INSERT INTO images ( filename, image_src, thumbnail_src ) VALUES ( :filename, :image_src, :thumbnail_src );';
-
-        /** @var \PDOStatement $statement */
-        $statement = $this->Database->prepare( $query );
-        $statement->bindValue( ':filename', $filename );
-        $statement->bindValue( ':image_src', $image_src );
-        $statement->bindValue( ':thumbnail_src', $thumbnail_src );
-        $statement->execute();
-
-        $result[ 'id' ] = $this->Database->lastInsertId();
-
-        return $result[ 'id' ] !== '0' && $statement->rowCount() > 0;
-    }
-
-    private function createThumbnail( array &$errors, string $thumbnail_path, int $thumbnail_width = 200, int $thumbnail_height = 200 ) : bool {
-        list( $image_width, $image_height, $image_type ) = getimagesize( $_FILES[ 'image' ][ 'tmp_name' ] );
-
-        switch( $image_type ) {
-            case IMAGETYPE_JPEG:
-                $gd_src = imagecreatefromjpeg( $_FILES[ 'image' ][ 'tmp_name' ] );
-                break;
-            case IMAGETYPE_PNG:
-                $gd_src = imagecreatefrompng( $_FILES[ 'image' ][ 'tmp_name' ] );
-                break;
-            default:
-                return FALSE;
-        }
-
-        /** @var int|float $image_ratio */
-        $image_ratio = $image_width / $image_height;
-        /** @var int|float $thumbnail_ratio */
-        $thumbnail_ratio = $thumbnail_width / $thumbnail_height;
-
-        if ( $thumbnail_ratio > $image_ratio ) {
-            $thumbnail_width = $thumbnail_height / $image_ratio;
-        }
-        else {
-            $thumbnail_height = $thumbnail_width / $image_ratio;
-        }
-
-        /** @var \GdImage $gd_thumbnail */
-        $gd_thumbnail = imagecreate( $thumbnail_width, $thumbnail_height );
-
-        if ( $this->copyImage( $gd_thumbnail, $gd_src, $thumbnail_width, $thumbnail_height, $image_width, $image_height ) === FALSE ) {
-            $errors[ 'image' ][] = 'Can\'t copy thumbnail image from resampled.';
-        }
-        if ( $this->createPNG( $gd_thumbnail, $thumbnail_path ) === FALSE ) {
-            $errors[ 'image' ][] = 'Can\'t create a png from thumbnail image.';
-        }
-
-        imagedestroy( $gd_src );
-        imagedestroy( $gd_thumbnail );
-
-        return isset( $errors[ 'image' ] ) === FALSE || count( $errors[ 'image' ] ) === 0;
-    }
-
-    private function createImage( array &$errors, string $image_path ) : bool {
-        list ( $image_width, $image_height, $image_type ) = getimagesize( $_FILES[ 'image' ][ 'tmp_name' ] );
-
-        switch( $image_type ) {
-            case IMAGETYPE_JPEG:
-                $gd_src = imagecreatefromjpeg( $_FILES[ 'image' ][ 'tmp_name' ] );
-                break;
-            case IMAGETYPE_PNG:
-                $gd_src = imagecreatefrompng( $_FILES[ 'image' ][ 'tmp_name' ] );
-                break;
-            default:
-                return FALSE;
-        }
-
-        /** @var \GdImage $gd_image */
-        $gd_image = imagecreate( $image_width, $image_height );
-
-        if ( $this->copyImage( $gd_image, $gd_src, $image_width, $image_height, $image_width, $image_height ) === FALSE ) {
-            $errors[ 'image' ][] = 'Can\'t copy image from resampled.';
-        }
-        if ( $this->createPNG( $gd_image, $image_path ) === FALSE ) {
-            $errors[ 'image' ][] = 'Can\'t create a png from image.';
-        }
-
-        imagedestroy( $gd_src );
-        imagedestroy( $gd_image );
-
-        return isset( $errors[ 'image' ] ) === FALSE || count( $errors[ 'image' ] ) === 0;
-    }
-
-    private function copyImage( $image, $src, $image_width, $image_height, $src_width, $src_height ) : bool {
-
-        return imagecopyresampled( $image, $src, 0, 0, 0 ,0, $image_width, $image_height, $src_width, $src_height  );
-    }
-
-    private function createDataCodedPath() : string {
-        /** @var string $date */
-        $date = date( 'Y.m.d', time() );
-        /** @var array $code */
-        $code = explode( '.', $date );
-        /** @var string $path */
-        $path = implode( DIRECTORY_SEPARATOR, $code );
-
-        return $path;
-    }
-
-    private function createFolder( string $dir ) : bool {
-        if ( file_exists( $dir ) === FALSE ) {
-
-            return (bool) mkdir( $dir, 0777, TRUE );
-        }
-
-        return TRUE;
-    }
-
-    private function createPNG( $image, string $path ) : bool {
-
-        return imagepng( $image, UPLOADS_PATH . DIRECTORY_SEPARATOR .  $path, 9 );
-    }
-
-    private function sanitizeImageExt( string $image_type ) : ?string {
-        switch( $image_type ) {
-            case IMAGETYPE_JPEG:
-                return '.jpeg';
-            case IMAGETYPE_PNG:
-                return '.png';
-            default:
-                return NULL;
         }
     }
 
@@ -235,6 +180,14 @@ final class Images extends AbstractModel {
         }
 
         return isset( $errors[ 'image' ] ) === FALSE || count( $errors[ 'image' ] ) === 0;
+    }
+
+    private function validateImageId( array &$errors, ?string $image_id ) : bool {
+        if ( is_null( $image_id ) || empty( $image_id ) ) {
+            $errors['image_id'][] = 'Bitte gib eine gültige Image-ID an.';
+        }
+
+        return isset($errors[ 'image_id' ]) === FALSE || count($errors[ 'image_id' ]) === 0;
     }
 
 }

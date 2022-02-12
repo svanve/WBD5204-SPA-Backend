@@ -27,4 +27,22 @@ final class Images extends AbstractController {
         }
     }
 
+    // @GET 
+    /// Braucht es diese Funktion (oder nur intern?) ///
+    public function get( ?int $image_id ) : void {
+        /** @var array $error */
+        $errors = [];
+        /** @var array $result */
+        $result = [];
+
+        if ( $this->isMethod( self::METHOD_GET ) && $this->ImagesModel->getImagePath( $errors, $result, $image_id ) ) {
+            $this->responseCode(200);
+            $this->printJSON( [ 'success' => true, 'result' => $result ] );
+        } else {
+            $this->responseCode(400);
+            $this->printJSON( [ 'errors' => $errors ] );
+        }
+
+    }
+
 }   

@@ -26,7 +26,7 @@ final class Challenges extends AbstractModel {
         }
     }
 
-    public function getChallengeById( array &$errors, array &$result, int $challenge_id ) : bool {
+    public function getChallengeById( array &$errors, array &$result, ?int $challenge_id ) : bool {
         /** @var bool $validate_challenge_id */
         $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
 
@@ -167,7 +167,7 @@ final class Challenges extends AbstractModel {
 
     private function validateChallengeId( array &$errors, ?string $challenge_id ) : bool {
         if ( is_null($challenge_id) || empty( $challenge_id ) ) {
-            $errors['challenge_id'][] = 'Bitte gib eine Challenge-ID an';
+            $errors['challenge_id'][] = 'Bitte gib eine gültige Challenge-ID an.';
         }
 
         return isset($errors[ 'challenge_id' ]) === FALSE || count($errors[ 'challenge_id' ]) === 0;
