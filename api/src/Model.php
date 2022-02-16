@@ -9,8 +9,9 @@ abstract class Model {
 
     public function __construct() {
         $this->Database = new Database();
-        $this->user_id = $_SESSION['user_id'] ?? NULL;
     }
+
+
 
     public function getFormData() : array {
         /** @var array $data */

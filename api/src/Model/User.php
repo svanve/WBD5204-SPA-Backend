@@ -3,8 +3,16 @@
 namespace WBD5204\Model;
 
 use WBD5204\Model as AbstractModel;
+use WBD5204\Session as Session;
 
 final class User extends AbstractModel {
+
+    // public function __construct () {
+    //     $hashed_salt = $this->createHashedSalt();
+    //     $hashed_password = $this->createHashedPassword( 'Ehrenmann1!', $hashed_salt );
+    //     var_dump($hashed_salt);
+    //     var_dump($hashed_password);
+    // }
     
     public function emailExists( ?string $email ) : bool {
         /** @var string $query */
@@ -19,6 +27,46 @@ final class User extends AbstractModel {
         $results = $statement->fetchAll();
 
         return count($results) > 0;
+    }
+
+    public function getLoggedInUser()  {
+        return Session::get('userId');
+    }
+
+    public function getUserId( string $username ) : int {
+        /** @var string $query */
+        $query = 'SELECT id FROM users WHERE username = :username';
+
+        /** @var \PDOStatement $statement  */
+        $statement = $this->Database->prepare( $query );
+        $statement->bindValue( ':username', $username );
+        
+        $result = $statement->execute();
+
+        return $result;
+    }
+
+    public function getUsername( int $user_id ) : string {
+        /** @var string $query */
+        $query = 'SELECT username FROM users WHERE id = :id';
+
+        /** @var \PDOStatement $statement  */
+        $statement = $this->Database->prepare( $query );
+        $statement->bindValue( ':id', $user_id );
+        $result = $statement->execute();
+
+        return $result;
+    }
+
+    public function isLoggedIn( array &$errors ) : bool {
+        
+        if ( !Session::exists('userId') ) {
+
+            $errors['session'][] = 'Du musst dich zuerst einloggen.';
+            return FALSE;
+        }
+    
+        return TRUE;
     }
 
     public function usernameExists( ?string $username ) : bool {
@@ -38,11 +86,21 @@ final class User extends AbstractModel {
 
     public function register( array &$errors = [] ) : bool {
         
+        /** @var string $input_username */
         $input_username = filter_input( INPUT_POST, 'username');
+        /** @var string $input_email */
         $input_email = filter_input( INPUT_POST, 'email');
+        /** @var string $input_password */
         $input_password = filter_input( INPUT_POST, 'password');
+        /** @var string $input_password_repeat */
         $input_password_repeat = filter_input( INPUT_POST, 'password_repeat');
-        $input_image = filter_input(INPUT_POST, 'image');
+        /** @var string $input_image */
+        // $input_image = filter_input(INPUT_POST, 'image');
+        
+
+        // JOHN IMAGE wie reinbringen? FormData Object aus javascript..
+
+
 
         /** @var bool $validate_username */
         $validate_username = $this->validateUsername( $errors, $input_username);
@@ -50,16 +108,18 @@ final class User extends AbstractModel {
         $validate_email = $this->validateEmail( $errors, $input_email);
         /** @var bool $validate_password */
         $validate_password = $this->validatePassword( $errors, $input_password, $input_password_repeat);
+        /** @var bool $validate_image */
+        // $validate_image = $this->validateImage( $errors, $input_image );
 
 
-        if($validate_username && $validate_email && $validate_password) {
+        if( $validate_username && $validate_email && $validate_password && $validate_image ) {
             /** @var string $hashed_salt */
             $hashed_salt = $this->createHashedSalt();
             /** @var string $hashed_password */
             $hashed_password = $this->createHashedPassword( $input_password, $hashed_salt );
 
             /** @var string $query */
-            $query = 'INSERT INTO users (username, email, password, salt) VALUES (:username, :email, :password, :salt)';
+            $query = 'INSERT INTO users (username, email, password, salt, image) VALUES (:username, :email, :password, :salt, :image)';
 
             /** @var \PDOStatement $statement */
             $statement = $this->Database->prepare( $query );
@@ -67,6 +127,7 @@ final class User extends AbstractModel {
             $statement->bindValue(':email', $input_email);
             $statement->bindValue(':password', $hashed_password);
             $statement->bindValue(':salt', $hashed_salt);
+            // $statement->bindValue(':image', $image);
             $statement->execute();
 
             return $statement->rowCount() > 0;
@@ -122,7 +183,7 @@ final class User extends AbstractModel {
 
     public function logout( array &$errors = [], array &$success = [] ) : bool {
 
-        unset($_SESSION['user_id']);
+        Session::delete('userId');
 
         if (!isset($_SESSION['user_id'])) {
             $success['logout'][] = 'Du wurdest erfolgreich ausgeloggt.';
@@ -170,6 +231,19 @@ final class User extends AbstractModel {
 
         return isset( $errors['email'] ) === FALSE || count($errors['email']) === 0;
     }
+
+    // private function validateImage( array &$errors, ?string $image ) : bool {
+    //     // check if the image is not NULL or empty
+    //     if ( empty( $image ) ) {
+    //         $errors[ 'image' ][] = 'Please type in a image.';
+    //     }
+    //     // check if the image already exists
+    //     if ( $this->imageExists( $image ) === FALSE ) {
+    //         $errors[ 'image' ][] = 'Image doesn\'t exist.';
+    //     }
+
+    //     return isset( $errors[ 'image' ] ) === FALSE || count( $errors[ 'image' ] ) === 0;
+    // }
 
     public function validatePassword( array &$errors, ?string $password, ?string $password_repeat ) : bool {
         if (empty($password)) {
@@ -244,17 +318,5 @@ final class User extends AbstractModel {
         $hashed_password = $credentials['password'];
 
         return $hashed_password === $this->createHashedPassword($user_input, $hashed_salt);
-    }
-
-    public function getUserId( string $username ) : int {
-        /** @var string $query */
-        $query = 'SELECT id FROM users WHERE username = :username';
-
-        /** @var \PDOStatement $statement  */
-        $statement = $this->Database->prepare( $query );
-        $statement->bindValue( ':username', $username );
-        $statement->execute();
-
-        return $statement->fetch()['id'];
     }
 }

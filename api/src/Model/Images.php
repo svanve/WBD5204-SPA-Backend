@@ -92,6 +92,7 @@ final class Images extends AbstractModel {
     public function uploadImage( array &$errors, array &$result ) : bool {
         $validate_image_file = $this->validateImageFile( $errors );
 
+        var_dump($_FILES[ 'image' ]);
         if ( $validate_image_file ) {
             /** @var string $temp_image_id */
             $temp_image_id = $_FILES[ 'image' ][ 'name' ];
@@ -138,8 +139,6 @@ final class Images extends AbstractModel {
 
                 return FALSE;
             }
-
-            var_dump( isset( $result[ 'id' ] ) );
 
             return isset( $result[ 'id' ] );
         }

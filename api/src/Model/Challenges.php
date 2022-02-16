@@ -3,10 +3,23 @@
 namespace WBD5204\Model;
 
 use WBD5204\Model as AbstractModel;
+use WBD5204\Model\User as UserModel;
 
 final class Challenges extends AbstractModel {
 
-    public function deleteChallenge( array $errors, ?string $challenge_id ) : bool {
+    public ?int $user_id;
+    public ?string $user_username;
+
+    public function __construct() {
+
+        // JOHN: Wie gebe ich Fehler an Controller zurück, wenn user nicht eingeloggt?
+            // $user = new UserModel();
+            // $this->userId = $user->getLoggedInUser();
+            // $this->user_username = $user->getUsername( $this->user_id );
+
+    }
+
+    public function delete( array $errors, ?string $challenge_id ) : bool {
         /** @var bool $validate_challenge_id */
         $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
 
@@ -38,7 +51,6 @@ final class Challenges extends AbstractModel {
                 description, 
                 
                 u.username,
-                u.picture, 
                 
                 p.name, 
                 p.level, 
@@ -53,13 +65,13 @@ final class Challenges extends AbstractModel {
 
             FROM challenges AS c
             
-            INNER JOIN users AS u
+            JOIN users AS u
                 ON c.author_id = u.id
             
-            INNER JOIN pokemons AS p
+            JOIN pokemons AS p
                 ON c.pokemon_id = p.id
             
-            INNER JOIN questions AS q
+            JOIN questions AS q
                 ON c.question_id = q.id
             
             WHERE c.id = :id';
@@ -78,44 +90,187 @@ final class Challenges extends AbstractModel {
         }
     }
 
-    public function getAllChallenges( array &$errors, array &$results ) : bool {
-
-        $query = 
-        'SELECT 
-            title, 
-            description, 
-            
-            u.username,
-            u.picture, 
-            
-            p.name, 
-            p.level, 
-            p.image,
-            
-            q.question_level, 
-            q.content, 
-            q.right_answer, 
-            q.wrong_answer_1, 
-            q.wrong_answer_2, 
-            q.wrong_answer_3
-
-        FROM challenges AS c
-        
-        INNER JOIN users AS u
-            ON c.author_id = u.id
-        
-        INNER JOIN pokemons AS p
-            ON c.pokemon_id = p.id
-        
-        INNER JOIN questions AS q
-            ON c.question_id = q.id';
+    public function getAllChallenges( array &$errors, array &$results, string $sort_by ) : bool {
+        /** @var string $sanitized_sort_by */
+        $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
+        /** @var bool $validate_sort_by */
+        $validate_sort_by = $this->validateSortBy( $errors, $sanitized_sort_by );
     
-        $statement = $this->Database->prepare( $query );
-        $statement->execute();
+        if( $validate_sort_by ) {
+            
+            /** @var string $parse_sort_by */
+            $parsed_sort_by = $this->parseSortBy( $sanitized_sort_by );
 
-        $results = $statement->fetchAll();
+            var_dump($parsed_sort_by);
+            $query = 
+            'SELECT 
+                title, 
+                description, 
+                
+                u.username,
+                
+                p.name, 
+                p.level, 
+                p.image,
+                
+                q.question_level, 
+                q.content, 
+                q.right_answer, 
+                q.wrong_answer_1, 
+                q.wrong_answer_2, 
+                q.wrong_answer_3
+    
+            FROM challenges AS c
+            
+            JOIN users AS u
+                ON c.author_id = u.id
+            
+            JOIN pokemons AS p
+                ON c.pokemon_id = p.id
+            
+            JOIN questions AS q
+                ON c.question_id = q.id
 
-        return count( $results ) > 0;
+            ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
+
+            $statement = $this->Database->prepare( $query );
+            $statement->execute();
+
+            $results = $statement->fetchAll();
+
+            return count( $results ) > 0;
+        } else {
+            return FALSE;
+        }
+        
+    }
+    
+    public function getCommunityChallenges( array &$errors, array &$results, string $sort_by ) : bool {
+        /** @var string $sanitized_sort_by */
+        $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
+        /** @var bool $validate_sort_by */
+        $validate_sort_by = $this->validateSortBy( $errors, $sanitized_sort_by );
+    
+        if( $validate_sort_by ) {
+            
+            /** @var string $parse_sort_by */
+            $parsed_sort_by = $this->parseSortBy( $sanitized_sort_by );
+
+            var_dump($parsed_sort_by);
+            $query = 
+            'SELECT 
+                title, 
+                description, 
+                
+                u.username,
+                
+                p.name, 
+                p.level, 
+                p.image,
+                
+                q.question_level, 
+                q.content, 
+                q.right_answer, 
+                q.wrong_answer_1, 
+                q.wrong_answer_2, 
+                q.wrong_answer_3
+    
+            FROM challenges AS c
+            
+            JOIN users AS u
+                ON c.author_id = u.id
+            
+            JOIN pokemons AS p
+                ON c.pokemon_id = p.id
+            
+            JOIN questions AS q
+                ON c.question_id = q.id
+
+            WHERE NOT u.username = :username  
+
+            ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
+
+            $statement = $this->Database->prepare( $query );
+            $statement->bindValue( ':username', $this->user_username );
+            $statement->execute();
+
+            $results = $statement->fetchAll();
+
+            return count( $results ) > 0;
+        } else {
+            return FALSE;
+        }
+        
+    }
+    
+    public function getMyChallenges( array &$errors, array &$results, string $sort_by ) : bool {
+        /** @var string $sanitized_sort_by */
+        $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
+        /** @var bool $validate_sort_by */
+        $validate_sort_by = $this->validateSortBy( $errors, $sanitized_sort_by );
+    
+        if( $validate_sort_by ) {
+            
+            /** @var string $parse_sort_by */
+            $parsed_sort_by = $this->parseSortBy( $sanitized_sort_by );
+
+            var_dump($parsed_sort_by);
+            $query = 
+            'SELECT 
+                title, 
+                description, 
+                
+                u.username,
+                
+                p.name, 
+                p.level, 
+                p.image,
+                
+                q.question_level, 
+                q.content, 
+                q.right_answer, 
+                q.wrong_answer_1, 
+                q.wrong_answer_2, 
+                q.wrong_answer_3
+    
+            FROM challenges AS c
+            
+            JOIN users AS u
+                ON c.author_id = u.id
+            
+            JOIN pokemons AS p
+                ON c.pokemon_id = p.id
+            
+            JOIN questions AS q
+                ON c.question_id = q.id
+
+            ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
+
+            $statement = $this->Database->prepare( $query );
+            $statement->execute();
+
+            $results = $statement->fetchAll();
+
+            return count( $results ) > 0;
+        } else {
+            return FALSE;
+        }
+        
+    }
+
+    private function parseSortBy( string $sort_by ) : string {
+        if( $sort_by === 'id' ) {
+            return $sort_by = 'c.id';
+        } 
+        if( $sort_by === 'level' ) {
+            return $sort_by = 'p.level';
+        } 
+        if( $sort_by === 'title' ) {
+            return $sort_by = 'c.title';
+        } 
+        if( $sort_by === 'username' ) {
+            return $sort_by = 'u.username';
+        } 
     }
 
     public function update( array &$errors, ?string $challenge_id ) : bool {
@@ -157,12 +312,6 @@ final class Challenges extends AbstractModel {
         } else {
             return FALSE;
         }
-    }
-
-    // Wohin gehört diese Funktion?
-    private function validateInput( string $validate_pokemon, string $validate_question, string $validate_title, string $validate_description ) : bool {
-
-        
     }
 
     private function validateChallengeId( array &$errors, ?string $challenge_id ) : bool {
@@ -215,6 +364,15 @@ final class Challenges extends AbstractModel {
         }
 
         return isset($errors[ 'question_id' ]) === FALSE || count($errors[ 'question_id' ]) === 0;
+    }
+
+    private function validateSortBy( array &$errors, string $sanitized_sort_by ) : bool {
+        if ( $sanitized_sort_by === 'id' || $sanitized_sort_by === 'title' || $sanitized_sort_by === 'level' || $sanitized_sort_by === 'username') {
+            return TRUE;
+        } else {
+            $errors['sort_by'][] = 'Gib entweder "title", "id", "level" oder "username" an.';
+            return FALSE;
+        }
     }
 
     private function validateUserId( array &$errors, ?int $user_id ) : bool {
