@@ -5,57 +5,54 @@ namespace WBD5204;
 abstract class Model {
 
     protected ?Database $Database = NULL;
-    protected ?int $user_id = NULL;
 
     public function __construct() {
         $this->Database = new Database();
     }
 
+    // public function getFormData() : array {
+    //     /** @var array $data */
+    //     $data = [];
+    //     // read incoming data, then we have to parse the request into array
+    //     $input = $this->getInput();
 
+    //     // grab multipart boundary from content type header
+    //     preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
+    //     $boundary = $matches[1];
 
-    public function getFormData() : array {
-        /** @var array $data */
-        $data = [];
-        // read incoming data, then we have to parse the request into array
-        $input = $this->getInput();
+    //     // split content by boundary and get rid of last -- element
+    //     $a_blocks = preg_split("/-+$boundary/", $input);
+    //     array_pop($a_blocks);
 
-        // grab multipart boundary from content type header
-        preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
-        $boundary = $matches[1];
+    //     // loop data blocks
+    //     foreach ($a_blocks as $id => $block)
+    //     {
+    //         if (empty($block))
+    //             continue;
 
-        // split content by boundary and get rid of last -- element
-        $a_blocks = preg_split("/-+$boundary/", $input);
-        array_pop($a_blocks);
+    //         // you'll have to var_dump $block to understand this and maybe replace \n or \r with a visibile char
 
-        // loop data blocks
-        foreach ($a_blocks as $id => $block)
-        {
-            if (empty($block))
-                continue;
+    //         // parse uploaded files
+    //         if (strpos($block, 'application/octet-stream') !== FALSE)
+    //         {
+    //             // match "name", then everything after "stream" (optional) except for prepending newlines
+    //             preg_match("/name=\"([^\"]*)\".*stream[\n|\r]+([^\n\r].*)?$/s", $block, $matches);
+    //         }
+    //         // parse all other fields
+    //         else
+    //         {
+    //             // match "name" and optional value in between newline sequences
+    //             preg_match('/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s', $block, $matches);
+    //         }
 
-            // you'll have to var_dump $block to understand this and maybe replace \n or \r with a visibile char
+    //         $data[$matches[1]] = $matches[2];
+    //     }
 
-            // parse uploaded files
-            if (strpos($block, 'application/octet-stream') !== FALSE)
-            {
-                // match "name", then everything after "stream" (optional) except for prepending newlines
-                preg_match("/name=\"([^\"]*)\".*stream[\n|\r]+([^\n\r].*)?$/s", $block, $matches);
-            }
-            // parse all other fields
-            else
-            {
-                // match "name" and optional value in between newline sequences
-                preg_match('/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s', $block, $matches);
-            }
+    //     return $data;
+    // }
 
-            $data[$matches[1]] = $matches[2];
-        }
+    // public function getInput() : string {
 
-        return $data;
-    }
-
-    public function getInput() : string {
-
-        return file_get_contents('php://input');
-    }
+    //     return file_get_contents('php://input');
+    // }
 }

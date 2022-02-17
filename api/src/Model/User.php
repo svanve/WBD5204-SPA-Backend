@@ -59,8 +59,8 @@ final class User extends AbstractModel {
     }
 
     public function isLoggedIn( array &$errors ) : bool {
-        
-        if ( !Session::exists('userId') ) {
+
+        if ( !Session::exists('user_id') ) {
 
             $errors['session'][] = 'Du musst dich zuerst einloggen.';
             return FALSE;
@@ -84,7 +84,7 @@ final class User extends AbstractModel {
         return count($results) > 0;
     }
 
-    public function register( array &$errors = [] ) : bool {
+    public function register( array &$errors = [], array &$result = [] ) : bool {
         
         /** @var string $input_username */
         $input_username = filter_input( INPUT_POST, 'username');
@@ -93,14 +93,9 @@ final class User extends AbstractModel {
         /** @var string $input_password */
         $input_password = filter_input( INPUT_POST, 'password');
         /** @var string $input_password_repeat */
-        $input_password_repeat = filter_input( INPUT_POST, 'password_repeat');
-        /** @var string $input_image */
-        // $input_image = filter_input(INPUT_POST, 'image');
-        
-
-        // JOHN IMAGE wie reinbringen? FormData Object aus javascript..
-
-
+        $input_password_repeat = filter_input( INPUT_POST, 'password_repeat');    
+        /** @var int $image_id */
+        $image_id = $result['id'];
 
         /** @var bool $validate_username */
         $validate_username = $this->validateUsername( $errors, $input_username);
@@ -108,18 +103,16 @@ final class User extends AbstractModel {
         $validate_email = $this->validateEmail( $errors, $input_email);
         /** @var bool $validate_password */
         $validate_password = $this->validatePassword( $errors, $input_password, $input_password_repeat);
-        /** @var bool $validate_image */
-        // $validate_image = $this->validateImage( $errors, $input_image );
 
 
-        if( $validate_username && $validate_email && $validate_password && $validate_image ) {
+        if( $validate_username && $validate_email && $validate_password ) {
             /** @var string $hashed_salt */
             $hashed_salt = $this->createHashedSalt();
             /** @var string $hashed_password */
             $hashed_password = $this->createHashedPassword( $input_password, $hashed_salt );
 
             /** @var string $query */
-            $query = 'INSERT INTO users (username, email, password, salt, image) VALUES (:username, :email, :password, :salt, :image)';
+            $query = 'INSERT INTO users (username, email, password, salt, image_id) VALUES (:username, :email, :password, :salt, :image_id)';
 
             /** @var \PDOStatement $statement */
             $statement = $this->Database->prepare( $query );
@@ -127,7 +120,7 @@ final class User extends AbstractModel {
             $statement->bindValue(':email', $input_email);
             $statement->bindValue(':password', $hashed_password);
             $statement->bindValue(':salt', $hashed_salt);
-            // $statement->bindValue(':image', $image);
+            $statement->bindValue(':image_id', $image_id);
             $statement->execute();
 
             return $statement->rowCount() > 0;
@@ -271,7 +264,7 @@ final class User extends AbstractModel {
             $errors['password'][] = 'Das Passwort sollte mindestens ein Sonderzeichen enthalten.';
         }
         if (empty($password_repeat)) {
-            $errors['password'][] = "Bitte gib das Passwort im Feld 'Passwort wiederholen' ein.";
+            $errors['password'][] = "Bitte gib das Passwort im Feld 'Passwort' ein.";
         }
         if ($password !== $password_repeat) {
             $errors['password'][] = 'Bitte gib das Passwort im Feld \'Passwort wiederholen\' ein.';

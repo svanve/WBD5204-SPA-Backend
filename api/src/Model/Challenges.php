@@ -10,14 +10,16 @@ final class Challenges extends AbstractModel {
     public ?int $user_id;
     public ?string $user_username;
 
-    public function __construct() {
+    // public function __construct() {
 
-        // JOHN: Wie gebe ich Fehler an Controller zurück, wenn user nicht eingeloggt?
-            // $user = new UserModel();
-            // $this->userId = $user->getLoggedInUser();
-            // $this->user_username = $user->getUsername( $this->user_id );
+    //     // JOHN: Wie gebe ich Fehler an Controller zurück, wenn user nicht eingeloggt?
+    //         // $user = new UserModel();
+    //         // $this->userId = $user->getLoggedInUser();
+    //         // $this->user_username = $user->getUsername( $this->user_id );
 
-    }
+    // parent::__construct();
+
+    // }
 
     public function delete( array $errors, ?string $challenge_id ) : bool {
         /** @var bool $validate_challenge_id */
@@ -88,61 +90,6 @@ final class Challenges extends AbstractModel {
 
             return FALSE;
         }
-    }
-
-    public function getAllChallenges( array &$errors, array &$results, string $sort_by ) : bool {
-        /** @var string $sanitized_sort_by */
-        $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
-        /** @var bool $validate_sort_by */
-        $validate_sort_by = $this->validateSortBy( $errors, $sanitized_sort_by );
-    
-        if( $validate_sort_by ) {
-            
-            /** @var string $parse_sort_by */
-            $parsed_sort_by = $this->parseSortBy( $sanitized_sort_by );
-
-            var_dump($parsed_sort_by);
-            $query = 
-            'SELECT 
-                title, 
-                description, 
-                
-                u.username,
-                
-                p.name, 
-                p.level, 
-                p.image,
-                
-                q.question_level, 
-                q.content, 
-                q.right_answer, 
-                q.wrong_answer_1, 
-                q.wrong_answer_2, 
-                q.wrong_answer_3
-    
-            FROM challenges AS c
-            
-            JOIN users AS u
-                ON c.author_id = u.id
-            
-            JOIN pokemons AS p
-                ON c.pokemon_id = p.id
-            
-            JOIN questions AS q
-                ON c.question_id = q.id
-
-            ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
-
-            $statement = $this->Database->prepare( $query );
-            $statement->execute();
-
-            $results = $statement->fetchAll();
-
-            return count( $results ) > 0;
-        } else {
-            return FALSE;
-        }
-        
     }
     
     public function getCommunityChallenges( array &$errors, array &$results, string $sort_by ) : bool {

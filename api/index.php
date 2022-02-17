@@ -3,7 +3,9 @@
 namespace WBD5204;
 
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PATCH, UPDATE, DELETE');
+header('Access-Control-Allow-Methods: GET, POST, PATCH, UPDATE, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Origin, Content-Type, Authorization, X-Auth-Token');
+
 
 /** @var string $autoload_file */
 $autoload_file = __DIR__ . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';

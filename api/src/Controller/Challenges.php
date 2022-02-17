@@ -33,35 +33,16 @@ final class Challenges extends AbstractController {
         $errors = [];
         /** @var $results */
         $results = [];
-        
 
-        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getAllChallenges( $errors, $results, 'id' )) {
+        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getCommunityChallenges( $errors, $results, 'id' )) {
             $this->responseCode(200);
             $this->printJSON( [ 'success' => true, 'results' => $results ] );
+            var_dump($result);
         } else {
             $this->responseCode(400);
             $this->printJSON( [ 'errors' => $errors ] );
         }
     }
-    
-    // @GET
-    public function getAll( ?string $sort_by = 'id' ) : void {
-        /** @var $errors */
-        $errors = [];
-        /** @var $results */
-        $results = [];
-        
-        
-        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getAllChallenges( $errors, $results, $sort_by )) {
-            $this->responseCode(200);
-            $this->printJSON( [ 'success' => true, 'results' => $results ] );
-        } else {
-            $this->responseCode(400);
-            $this->printJSON( [ 'errors' => $errors ] );
-        }
-    }
-    
-    
     
     // @GET 
     public function getById( ?int $challenge_id = NULL ) : void {

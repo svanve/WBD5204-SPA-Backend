@@ -4,6 +4,7 @@ namespace WBD5204\Controller;
 
 use WBD5204\Controller as AbstractController;
 use WBD5204\Model\User as UserModel;
+use WBD5204\Model\Images as ImagesModel;
 
 final class User extends AbstractController {
 
@@ -30,8 +31,12 @@ final class User extends AbstractController {
     public function register() : void {
         /** @var array $errors */
         $errors = [];
+        /** @var array $result */
+        $result = [];
 
-        if($this->isMethod(self::METHOD_POST) && $this->user->register($errors)) {
+        $image = new ImagesModel();
+
+        if($this->isMethod(self::METHOD_POST) && $image->uploadImage($errors, $result) && $this->user->register($errors, $result)) {
             $this->responseCode( 201 );
             $this->printJSON( ['success' => true] );
         }
