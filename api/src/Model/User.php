@@ -29,8 +29,14 @@ final class User extends AbstractModel {
         return count($results) > 0;
     }
 
-    public function getLoggedInUser()  {
-        return Session::get('userId');
+    public function getLoggedInUser( ?string $param = 'id' ) : int|string {
+        $user_id = Session::get('user_id');
+
+        if ( $param === 'id' ) {
+            return $user_id;
+        } else if ( $param === 'username') {
+            return $this->getUsername( $user_id );
+        }
     }
 
     public function getUserId( string $username ) : int {
@@ -40,10 +46,11 @@ final class User extends AbstractModel {
         /** @var \PDOStatement $statement  */
         $statement = $this->Database->prepare( $query );
         $statement->bindValue( ':username', $username );
-        
-        $result = $statement->execute();
+        $statement->execute();
 
-        return $result;
+        $result = $statement->fetch();
+
+        return $result['id'];
     }
 
     public function getUsername( int $user_id ) : string {
@@ -53,7 +60,9 @@ final class User extends AbstractModel {
         /** @var \PDOStatement $statement  */
         $statement = $this->Database->prepare( $query );
         $statement->bindValue( ':id', $user_id );
-        $result = $statement->execute();
+        $statement->execute();
+
+        $result = $statement->fetch();
 
         return $result;
     }
@@ -176,7 +185,7 @@ final class User extends AbstractModel {
 
     public function logout( array &$errors = [], array &$success = [] ) : bool {
 
-        Session::delete('userId');
+        Session::delete('user_id');
 
         if (!isset($_SESSION['user_id'])) {
             $success['logout'][] = 'Du wurdest erfolgreich ausgeloggt.';

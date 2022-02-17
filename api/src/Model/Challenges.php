@@ -3,23 +3,8 @@
 namespace WBD5204\Model;
 
 use WBD5204\Model as AbstractModel;
-use WBD5204\Model\User as UserModel;
 
 final class Challenges extends AbstractModel {
-
-    public ?int $user_id;
-    public ?string $user_username;
-
-    // public function __construct() {
-
-    //     // JOHN: Wie gebe ich Fehler an Controller zurück, wenn user nicht eingeloggt?
-    //         // $user = new UserModel();
-    //         // $this->userId = $user->getLoggedInUser();
-    //         // $this->user_username = $user->getUsername( $this->user_id );
-
-    // parent::__construct();
-
-    // }
 
     public function delete( array $errors, ?string $challenge_id ) : bool {
         /** @var bool $validate_challenge_id */
@@ -41,7 +26,7 @@ final class Challenges extends AbstractModel {
         }
     }
 
-    public function getChallengeById( array &$errors, array &$result, ?int $challenge_id ) : bool {
+    public function getChallengeById( array &$errors, array &$result, int $user_id, ?int $challenge_id ) : bool {
         /** @var bool $validate_challenge_id */
         $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
 
@@ -53,10 +38,11 @@ final class Challenges extends AbstractModel {
                 description, 
                 
                 u.username,
+                u.image_id
                 
                 p.name, 
                 p.level, 
-                p.image,
+                p.pokedex_no
                 
                 q.question_level, 
                 q.content, 
@@ -76,10 +62,11 @@ final class Challenges extends AbstractModel {
             JOIN questions AS q
                 ON c.question_id = q.id
             
-            WHERE c.id = :id';
+            WHERE c.id = :id AND c.author_id = :user_id';
         
             $statement = $this->Database->prepare( $query );
             $statement->bindValue( ':id', $challenge_id );
+            $statement->bindValue( ':user_id', $user_id );
             $statement->execute();
 
             $result = $statement->fetch();
@@ -92,28 +79,29 @@ final class Challenges extends AbstractModel {
         }
     }
     
-    public function getCommunityChallenges( array &$errors, array &$results, string $sort_by ) : bool {
+    public function getCommunityChallenges( array &$errors, array &$results, int $user_id, string $sort_by ) : bool {
         /** @var string $sanitized_sort_by */
         $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
         /** @var bool $validate_sort_by */
         $validate_sort_by = $this->validateSortBy( $errors, $sanitized_sort_by );
+
     
         if( $validate_sort_by ) {
             
             /** @var string $parse_sort_by */
             $parsed_sort_by = $this->parseSortBy( $sanitized_sort_by );
 
-            var_dump($parsed_sort_by);
             $query = 
             'SELECT 
                 title, 
                 description, 
                 
                 u.username,
-                
+                i.filename,
+
                 p.name, 
                 p.level, 
-                p.image,
+                p.pokedex_no,
                 
                 q.question_level, 
                 q.content, 
@@ -127,22 +115,26 @@ final class Challenges extends AbstractModel {
             JOIN users AS u
                 ON c.author_id = u.id
             
+            JOIN images AS i
+                ON c.image_id = i.id
+            
             JOIN pokemons AS p
                 ON c.pokemon_id = p.id
             
             JOIN questions AS q
                 ON c.question_id = q.id
 
-            WHERE NOT u.username = :username  
+            WHERE NOT c.author_id = :user_id
 
             ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
 
             $statement = $this->Database->prepare( $query );
-            $statement->bindValue( ':username', $this->user_username );
+            $statement->bindValue( ':user_id', $user_id );
             $statement->execute();
 
             $results = $statement->fetchAll();
 
+            var_dump($query);
             return count( $results ) > 0;
         } else {
             return FALSE;
@@ -150,7 +142,7 @@ final class Challenges extends AbstractModel {
         
     }
     
-    public function getMyChallenges( array &$errors, array &$results, string $sort_by ) : bool {
+    public function getMyChallenges( array &$errors, array &$results, int $username, string $sort_by ) : bool {
         /** @var string $sanitized_sort_by */
         $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
         /** @var bool $validate_sort_by */
@@ -168,10 +160,11 @@ final class Challenges extends AbstractModel {
                 description, 
                 
                 u.username,
-                
+                u.image_id
+
                 p.name, 
                 p.level, 
-                p.image,
+                p.pokedex_no
                 
                 q.question_level, 
                 q.content, 
@@ -191,9 +184,12 @@ final class Challenges extends AbstractModel {
             JOIN questions AS q
                 ON c.question_id = q.id
 
+            WHERE u.username = :username
+
             ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
 
             $statement = $this->Database->prepare( $query );
+            $statement->bindValue( 'username', $username );
             $statement->execute();
 
             $results = $statement->fetchAll();
@@ -330,11 +326,7 @@ final class Challenges extends AbstractModel {
         return isset($errors['user_id']) === FALSE || count($errors['user_id']) === 0;
     }
 
-    public function write( array &$errors = [] ) : bool {
-
-        //get user_id
-        /** @var ?int $user_id */
-        $user_id = $this->user_id ?? NULL;
+    public function write( int $user_id, array &$errors = [] ) : bool {
 
         //get input
         /** @var ?string $input_pokemon_id */

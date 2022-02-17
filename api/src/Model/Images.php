@@ -63,8 +63,10 @@ final class Images extends AbstractModel {
                 return FALSE;
             }
 
+            var_dump($sql_result);
             $parsed_sql_result = $this->parseResult( $sql_result[ 'filename' ]);
             $result = [ ...$result, ...$parsed_sql_result ];
+            
 
             return TRUE;
 
