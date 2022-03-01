@@ -26,7 +26,7 @@ final class Challenges extends AbstractModel {
         }
     }
 
-    public function getChallengeById( array &$errors, array &$result, int $user_id, ?int $challenge_id ) : bool {
+    public function getChallengeById( array &$errors, array &$result, ?int $challenge_id ) : bool {
         /** @var bool $validate_challenge_id */
         $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
 
@@ -34,15 +34,16 @@ final class Challenges extends AbstractModel {
 
             $query = 
             'SELECT 
-                title, 
-                description, 
+                c.title, 
+                c.description, 
+                c.id,
                 
                 u.username,
-                u.image_id
+                i2.filename,
                 
                 p.name, 
                 p.level, 
-                p.pokedex_no
+                p.pokedex_no,
                 
                 q.question_level, 
                 q.content, 
@@ -55,6 +56,12 @@ final class Challenges extends AbstractModel {
             
             JOIN users AS u
                 ON c.author_id = u.id
+
+            JOIN images AS i1
+                ON c.image_id = i1.id
+
+            JOIN images AS i2
+                ON u.image_id = i2.id
             
             JOIN pokemons AS p
                 ON c.pokemon_id = p.id
@@ -62,14 +69,19 @@ final class Challenges extends AbstractModel {
             JOIN questions AS q
                 ON c.question_id = q.id
             
-            WHERE c.id = :id AND c.author_id = :user_id';
+            WHERE c.id = :id';
         
             $statement = $this->Database->prepare( $query );
             $statement->bindValue( ':id', $challenge_id );
-            $statement->bindValue( ':user_id', $user_id );
             $statement->execute();
 
             $result = $statement->fetch();
+
+            if ( !$result ) {
+                $errors['challenge_by_id'][] = 'Die Challenge existiert nicht.';
+
+                return FALSE;
+            }
 
             return count( $result ) > 0;
 
@@ -85,7 +97,6 @@ final class Challenges extends AbstractModel {
         /** @var bool $validate_sort_by */
         $validate_sort_by = $this->validateSortBy( $errors, $sanitized_sort_by );
 
-    
         if( $validate_sort_by ) {
             
             /** @var string $parse_sort_by */
@@ -93,11 +104,12 @@ final class Challenges extends AbstractModel {
 
             $query = 
             'SELECT 
-                title, 
-                description, 
+                c.title, 
+                c.description, 
+                c.id,
                 
                 u.username,
-                i.filename,
+                i2.filename,
 
                 p.name, 
                 p.level, 
@@ -115,9 +127,12 @@ final class Challenges extends AbstractModel {
             JOIN users AS u
                 ON c.author_id = u.id
             
-            JOIN images AS i
-                ON c.image_id = i.id
+            JOIN images AS i1
+                ON c.image_id = i1.id
             
+            JOIN images AS i2
+                ON u.image_id = i2.id
+
             JOIN pokemons AS p
                 ON c.pokemon_id = p.id
             
@@ -134,7 +149,6 @@ final class Challenges extends AbstractModel {
 
             $results = $statement->fetchAll();
 
-            var_dump($query);
             return count( $results ) > 0;
         } else {
             return FALSE;
@@ -142,7 +156,7 @@ final class Challenges extends AbstractModel {
         
     }
     
-    public function getMyChallenges( array &$errors, array &$results, int $username, string $sort_by ) : bool {
+    public function getMyChallenges( array &$errors, array &$results, int $user_id, string $sort_by ) : bool {
         /** @var string $sanitized_sort_by */
         $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
         /** @var bool $validate_sort_by */
@@ -156,15 +170,16 @@ final class Challenges extends AbstractModel {
             var_dump($parsed_sort_by);
             $query = 
             'SELECT 
-                title, 
-                description, 
+                c.title, 
+                c.description, 
+                c.id,
                 
                 u.username,
-                u.image_id
+                i2.filename,
 
                 p.name, 
                 p.level, 
-                p.pokedex_no
+                p.pokedex_no,
                 
                 q.question_level, 
                 q.content, 
@@ -177,6 +192,12 @@ final class Challenges extends AbstractModel {
             
             JOIN users AS u
                 ON c.author_id = u.id
+
+            JOIN images AS i1
+                ON c.image_id = i1.id
+            
+            JOIN images AS i2
+                ON u.image_id = i2.id
             
             JOIN pokemons AS p
                 ON c.pokemon_id = p.id
@@ -184,12 +205,12 @@ final class Challenges extends AbstractModel {
             JOIN questions AS q
                 ON c.question_id = q.id
 
-            WHERE u.username = :username
+            WHERE c.author_id = :user_id
 
             ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
 
             $statement = $this->Database->prepare( $query );
-            $statement->bindValue( 'username', $username );
+            $statement->bindValue( 'user_id', $user_id );
             $statement->execute();
 
             $results = $statement->fetchAll();
@@ -232,22 +253,16 @@ final class Challenges extends AbstractModel {
         $validate_title = $this->validateTitle( $errors, $input_title );
         /** @var bool $validate_description */
         $validate_description = $this->validateDescription( $errors, $input_description );
-        /** @var bool $validate_pokemon_id */
-        $validate_pokemon_id = $this->validatePokemonId( $errors, $input_pokemon_id ); 
-        /** @var bool $validate_question_id */
-        $validate_question_id = $this->validateQuestionId( $errors, $input_question_id ); 
         /** @var bool $validate_challenge_id */
         $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
 
         if ( $validate_challenge_id && $validate_title && $validate_description && $validate_pokemon_id && $validate_question_id ) {
             /** @var string $query */
-            $query = 'UPDATE challenges SET title = :title, description = :description, pokemon_id = :pokemon_id, question_id = :question_id WHERE id = :id';
+            $query = 'UPDATE challenges SET title = :title, description = :description WHERE id = :id';
             /** @var \PDOStatement $statement */
             $statement = $this->Database->prepare( $query );
             $statement->bindValue( 'title', $input_title );
             $statement->bindValue( 'description', $input_description );
-            $statement->bindValue( 'pokemon_id', $input_pokemon_id );
-            $statement->bindValue( 'question_id', $input_question_id );
             $statement->bindValue( 'id', $challenge_id );
             $statement->execute();
 

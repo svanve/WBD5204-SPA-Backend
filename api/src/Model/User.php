@@ -273,10 +273,10 @@ final class User extends AbstractModel {
             $errors['password'][] = 'Das Passwort sollte mindestens ein Sonderzeichen enthalten.';
         }
         if (empty($password_repeat)) {
-            $errors['password'][] = "Bitte gib das Passwort im Feld 'Passwort' ein.";
+            $errors['password'][] = "Bitte gib das Passwort ebenfalls im Feld 'Passwort wiederholen' ein.";
         }
         if ($password !== $password_repeat) {
-            $errors['password'][] = 'Bitte gib das Passwort im Feld \'Passwort wiederholen\' ein.';
+            $errors['password'][] = 'Bitte wiederhole das Passwort richtig.';
         }
 
         return  ( isset($errors['password'])        === FALSE || count($errors['password'])         === 0 ) &&

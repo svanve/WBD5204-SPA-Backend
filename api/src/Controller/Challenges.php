@@ -17,7 +17,12 @@ final class Challenges extends AbstractController {
         $this->UserModel = new UserModel();
         $this->ImagesModel = new ImagesModel();
 
-        $this->user_id = $this->UserModel->getLoggedInUser( 'id' );
+        /** @var array $errors */
+        $errors = [];
+
+        if ( $this->UserModel->isLoggedIn($errors) ) {
+            $this->user_id = $this->UserModel->getLoggedInUser( 'id' );
+        };
     }
 
     // @DELETE
@@ -36,15 +41,14 @@ final class Challenges extends AbstractController {
     
     // @GET
     public function index() : void {
-        /** @var $errors */
+        /** @var array $errors */
         $errors = [];
-        /** @var $results */
+        /** @var array $results */
         $results = [];
 
         if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getCommunityChallenges( $errors, $results, $this->user_id, 'id' )) {
             $this->responseCode(200);
             $this->printJSON( [ 'success' => true, 'results' => $results ] );
-            var_dump($result);
         } else {
             $this->responseCode(400);
             $this->printJSON( [ 'errors' => $errors ] );
@@ -58,8 +62,7 @@ final class Challenges extends AbstractController {
         /** @var array $data */
         $result = [];
         
-
-        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getChallengeById( $errors, $result, $this->user_id, $challenge_id )) {
+        if ($this->isMethod( self::METHOD_GET ) && $this->ChallengeModel->getChallengeById( $errors, $result, $challenge_id )) {
             $this->responseCode(200);
             $this->printJSON( ['success' => true, 'result' => $result ] );
         } else {
@@ -80,7 +83,7 @@ final class Challenges extends AbstractController {
             $this->responseCode(200);
             $this->printJSON( ['success' => true, 'result' => $result ] );
         } else {
-            $this->respopnseCode(400);
+            $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] ); 
         }
     }
@@ -89,7 +92,7 @@ final class Challenges extends AbstractController {
     public function getMine( ?string $sort_by = 'id' ) : void {
         /** @var array $errors */
         $errors = [];
-        /** @var array $data */
+        /** @var array $result */
         $result = [];
 
         
@@ -97,7 +100,7 @@ final class Challenges extends AbstractController {
             $this->responseCode(200);
             $this->printJSON( ['success' => true, 'result' => $result ] );
         } else {
-            $this->respopnseCode(400);
+            $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] ); 
         }
     }
