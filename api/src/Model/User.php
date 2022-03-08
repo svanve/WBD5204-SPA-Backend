@@ -114,7 +114,7 @@ final class User extends AbstractModel {
 
 
     public function isLoggedIn( array &$errors ) : bool {
-        var_dump(isset($_SESSION['user_id']));
+        
         if ( !Session::exists('user_id') ) {
 
             $errors['session'][] = 'Du musst dich zuerst einloggen.';

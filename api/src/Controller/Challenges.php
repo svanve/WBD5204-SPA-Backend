@@ -6,11 +6,12 @@ use WBD5204\Controller as AbstractController;
 use WBD5204\Model\Challenges as ChallengeModel;
 use WBD5204\Model\User as UserModel;
 use WBD5204\Model\Images as ImagesModel;
+use WBD5204\Authorize;
 
 final class Challenges extends AbstractController {
 
     /** @var ?int $user_id */
-    public $user_id = NULL;
+    public $user_id = 2;
 
     public function __construct() {
         $this->ChallengeModel = new ChallengeModel();
@@ -129,7 +130,7 @@ final class Challenges extends AbstractController {
     
         if ($this->isMethod( self::METHOD_POST) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->write( $this->user_id, $errors )) {
             $this->responseCode(201);
-            $this->printJSON( ['success' => true] );
+            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken() ] );
         } else {
             $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] );

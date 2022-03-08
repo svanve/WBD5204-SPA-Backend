@@ -39,7 +39,7 @@ final class User extends AbstractController {
 
         if($this->isMethod(self::METHOD_POST) && $image->uploadImage($errors, $result) && $this->user->register($errors, $result)) {
             $this->responseCode( 201 );
-            $this->printJSON( ['success' => true] );
+            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken() ] );
         }
         else {
             $this->responseCode( 400 );
@@ -56,7 +56,7 @@ final class User extends AbstractController {
 
         if($this->isMethod(self::METHOD_PUT) && $this->user->logout( $errors, $success )) {
             $this->responseCode( 200 );
-            $this->printJSON( ['success' => $success ] );
+            $this->printJSON( ['success' => $success, 'jwt' => Authorize::createToken() ] ); // hier auch token?
         }
         else {
             $this->responseCode( 400 );
