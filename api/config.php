@@ -14,3 +14,9 @@ define('DB_PASS', 'root');
 define('UPLOADS_DIR', 'uploads');
 define('UPLOADS_PATH', __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . UPLOADS_DIR);
 define('UPLOADS_URI', 'http://localhost:8888/' . UPLOADS_DIR);
+
+// JWT
+define( 'JWT_SECRET',   'L{E2>z]$mqBv]i"<A|j%8C;t%VA2)t');
+define( 'JWT_ISS',      'http://localhost:8888');
+define( 'JWT_AUD',      'http://localhost:8888');
+define( 'JWT_ALGO',     'HS256');
