@@ -5,6 +5,7 @@ namespace WBD5204\Controller;
 use WBD5204\Controller as AbstractController;
 use WBD5204\Model\User as UserModel;
 use WBD5204\Model\Images as ImagesModel;
+use WBD5204\Authorize;
 
 final class User extends AbstractController {
 
@@ -19,7 +20,7 @@ final class User extends AbstractController {
 
         if( $this->isMethod(self::METHOD_POST) && $this->user->login($errors) ) {
             $this->responseCode( 200 );
-            $this->printJSON( ['success' => true] );
+            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken() ] );
         } 
         else {
             $this->responseCode( 400 );
