@@ -37,8 +37,8 @@ abstract class Authorize {
 
             if (
                 $token[ 'iss' ] !== self::ISS
-                || $token[ 'nbf' ] > self::getCurrentTimestamp()
-                || $token[ 'exp' ] < self::getCurrentTimestamp()
+                || $token[ 'nbf' ] > self::createCurrentTimestamp()
+                || $token[ 'exp' ] < self::createCurrentTimestamp()
             ) {
                 $errors[ 'jwt' ][] = 'Token invalide oder abgelaufen.';
                 return FALSE;
