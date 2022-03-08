@@ -10,9 +10,6 @@ use WBD5204\Authorize;
 
 final class Challenges extends AbstractController {
 
-    /** @var ?int $user_id */
-    public $user_id = NULL;
-
     public function __construct() {
         $this->ChallengeModel = new ChallengeModel();
         $this->UserModel = new UserModel();
@@ -21,10 +18,6 @@ final class Challenges extends AbstractController {
         /** @var array $errors */
         $errors = [];
 
-
-        if ( $this->UserModel->isLoggedIn($errors) ) {
-            $this->user_id = $this->UserModel->getLoggedInUser( 'id' );
-        };
     }
 
     // @DELETE
@@ -33,7 +26,6 @@ final class Challenges extends AbstractController {
         $errors = [];
         
         if ($this->isMethod( self::METHOD_DELETE ) 
-        && $this->UserModel->isLoggedIn( $errors ) 
         && $this->ChallengeModel->delete( $errors, $challenge_id )) {
         
             $this->responseCode(200);
@@ -52,7 +44,6 @@ final class Challenges extends AbstractController {
         $results = [];
 
         if ($this->isMethod( self::METHOD_GET ) 
-        && $this->UserModel->isLoggedIn( $errors ) 
         && $this->ChallengeModel->getCommunityChallenges( $errors, $results, 'id' )) {
                 
             $this->responseCode(200);
@@ -86,7 +77,7 @@ final class Challenges extends AbstractController {
         /** @var array $data */
         $result = [];
 
-        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getCommunityChallenges( $errors, $result, $sort_by )) {
+        if ($this->isMethod( self::METHOD_GET ) && $this->ChallengeModel->getCommunityChallenges( $errors, $result, $sort_by )) {
             $this->responseCode(200);
             $this->printJSON( ['success' => true, 'result' => $result ] );
         } else {
@@ -103,7 +94,7 @@ final class Challenges extends AbstractController {
         $result = [];
 
         
-        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getMyChallenges( $errors, $result, $this->user_id, $sort_by )) {
+        if ($this->isMethod( self::METHOD_GET ) && $this->ChallengeModel->getMyChallenges( $errors, $result, $this->user_id, $sort_by )) {
             $this->responseCode(200);
             $this->printJSON( ['success' => true, 'result' => $result ] );
         } else {
@@ -120,7 +111,7 @@ final class Challenges extends AbstractController {
 
         // TODO: Überprüfen ob challenge id zu user gehört!
         
-        if ($this->isMethod( self::METHOD_PUT) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->update( $errors, $challenge_id )) {
+        if ($this->isMethod( self::METHOD_PUT) && $this->ChallengeModel->update( $errors, $challenge_id )) {
             $this->responseCode(200);
             $this->printJSON( ['success' => true ] );
         } else {
@@ -133,13 +124,14 @@ final class Challenges extends AbstractController {
     public function write () : void {
         /** @var array $errors */
         $errors = [];
+        /** @var array $result */
+        $result = [];
     
         if ($this->isMethod( self::METHOD_POST) 
-        && Authorize::authorizeToken( $errors )
-        && $this->UserModel->isLoggedIn( $errors ) 
-        && $this->ChallengeModel->write( $this->user_id, $errors )) {
+        && Authorize::authorizeToken( $errors, $result )
+        && $this->ChallengeModel->write( $result['user_id'], $errors )) {
             $this->responseCode(201);
-            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken() ] );
+            $this->printJSON( [ 'success' => true, 'jwt' => Authorize::createToken( $result['user_id'] ) ] );
         } else {
             $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] );

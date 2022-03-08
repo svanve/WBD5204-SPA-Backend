@@ -343,7 +343,7 @@ final class Challenges extends AbstractModel {
         return isset($errors['user_id']) === FALSE || count($errors['user_id']) === 0;
     }
 
-    public function write( int $user_id, array &$errors = [] ) : bool {
+    public function write( string $user_id, array &$errors = [] ) : bool {
 
         //get input
         /** @var ?string $input_pokemon_id */

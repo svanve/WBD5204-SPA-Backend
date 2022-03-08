@@ -13,15 +13,15 @@ abstract class Authorize {
 
     private static array $matches = [];
 
-    public static function createToken() : array {
+    public static function createToken( int $user_id ) : array {
         return (array) JWT::encode(
-            self::createData(),
+            self::createData( strval($user_id) ),
             self::SECRET,
             self::ALGO
         );
     }
 
-    public static function authorizeToken( array &$errors ) : bool {
+    public static function authorizeToken( array &$errors, ?array &$result = [] ) : bool {
         if ( self::checkIfTokenExists() === FALSE ) {
             $errors['jwt'][] = 'Keine Authorization im HTTP Header.';
             return FALSE;
@@ -44,6 +44,9 @@ abstract class Authorize {
                 return FALSE;
             }
 
+            /** @var array $result */
+            $result['user_id'] = $token[ 'sub' ];
+
             return TRUE;
         } catch ( \Exception $exception ) {
 
@@ -54,7 +57,7 @@ abstract class Authorize {
 
     private static function checkIfTokenExists() : bool {
 
-        return @preg_match( '/AUTHORIZE\s(\S+)/', $_SERVER[ 'HTTP_AUTHORIZATION' ], self::$matches );
+        return @preg_match( '/AUTHORIZE\s(\S+)/', $_SERVER[ 'HTTP_AUTHORIZATION' ], self::$matches);
     }
 
     private static function checkIfTokenMatched() : bool {
@@ -67,10 +70,11 @@ abstract class Authorize {
         return ( new \DateTimeImmutable() )->getTimestamp();
     }
     
-    private static function createData() : array {
+    private static function createData( string $user_id ) : array {
         return [
             'iss'   =>  self::ISS,
             'aud'   =>  self::AUD,
+            'sub'   =>  $user_id,
             'iat'   =>  self::createCurrentTimestamp(),
             'nbf'   =>  self::createCurrentTimestamp(),
             'exp'   =>  self::createExpirationTimestamp()

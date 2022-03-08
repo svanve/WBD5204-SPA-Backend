@@ -6,14 +6,6 @@ use WBD5204\Model as AbstractModel;
 use WBD5204\Session as Session;
 
 final class User extends AbstractModel {
-    
-    // public function __construct () {
-        //     $hashed_salt = $this->createHashedSalt();
-        //     $hashed_password = $this->createHashedPassword( 'User1111!', $hashed_salt );
-        //     var_dump($hashed_salt);
-        //     var_dump($hashed_password);
-        // }
-
 
     public function comparePasswords( array $credentials, string $user_input ) : bool { 
         /** @var string $hashed_salt */
@@ -113,19 +105,19 @@ final class User extends AbstractModel {
     }
 
 
-    public function isLoggedIn( array &$errors ) : bool {
-        
-        if ( !Session::exists('user_id') ) {
+    // public function isLoggedIn( array &$errors ) : bool {
 
-            $errors['session'][] = 'Du musst dich zuerst einloggen.';
-            return FALSE;
-        }
+    //     if ( !Session::exists('user_id') ) {
+
+    //         $errors['session'][] = 'Du musst dich zuerst einloggen.';
+    //         return FALSE;
+    //     }
     
-        return TRUE;
-    }
+    //     return TRUE;
+    // }
 
     
-    public function login( array &$errors = [] ) : bool {
+    public function login( array &$errors = [], array &$result = [] ) : bool {
         /** @var ?string $input_username */
         $input_username = filter_input( INPUT_POST, 'username');
         /** @var ?string $input_password */
@@ -153,7 +145,7 @@ final class User extends AbstractModel {
                 return $compare_passwords;
             }
             
-            Session::set('user_id', $credentials['id']);
+            $result['user_id'] = $credentials['id'];
             
             return $compare_passwords;
         }
@@ -172,7 +164,10 @@ final class User extends AbstractModel {
 
     public function logout( array &$errors = [], array &$success = [] ) : bool {
 
-        Session::delete('user_id');
+        // Session::delete('user_id');
+        
+        // delete Token from localStorage
+
 
         if (!isset($_SESSION['user_id'])) {
             $success['logout'][] = 'Du wurdest erfolgreich ausgeloggt.';
@@ -287,19 +282,6 @@ final class User extends AbstractModel {
 
         return TRUE;
     }
-    
-    // private function validateImage( array &$errors, ?string $image ) : bool {
-    //     // check if the image is not NULL or empty
-    //     if ( empty( $image ) ) {
-    //         $errors[ 'image' ][] = 'Please type in a image.';
-    //     }
-    //     // check if the image already exists
-    //     if ( $this->imageExists( $image ) === FALSE ) {
-    //         $errors[ 'image' ][] = 'Image doesn\'t exist.';
-    //     }
-    
-    //     return isset( $errors[ 'image' ] ) === FALSE || count( $errors[ 'image' ] ) === 0;
-    // }
                 
                 
     public function validatePassword( array &$errors, ?string $password, ?string $password_repeat ) : bool {

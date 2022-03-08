@@ -17,10 +17,13 @@ final class User extends AbstractController {
     public function login() : void {
         /** @var array $errors */
         $errors = [];
+        /** @var array $result */
+        $result = [];
 
-        if( $this->isMethod(self::METHOD_POST) && $this->user->login($errors) ) {
+        if( $this->isMethod(self::METHOD_POST) && $this->user->login($errors, $result) ) {
+            
             $this->responseCode( 200 );
-            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken() ] );
+            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken( $result['user_id'] ) ] );
         } 
         else {
             $this->responseCode( 400 );

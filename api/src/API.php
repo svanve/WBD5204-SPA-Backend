@@ -15,10 +15,10 @@ final class API {
     public function __construct() {
         $this->request = $this->parseRequest();
 
-        Session::start();
     }
 
     public function run() : void {
+        Session::start();
 
         // URL auslesen
         if ( $this->controllerExists() && $this->controllerMethodExists() ) {
