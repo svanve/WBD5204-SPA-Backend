@@ -3,6 +3,7 @@
 namespace WBD5204\Model;
 
 use WBD5204\Model as AbstractModel;
+use WBD5204\Session as Session;
 
 final class Challenges extends AbstractModel {
 
@@ -91,11 +92,13 @@ final class Challenges extends AbstractModel {
         }
     }
     
-    public function getCommunityChallenges( array &$errors, array &$results, int $user_id, string $sort_by ) : bool {
+    public function getCommunityChallenges( array &$errors, array &$results, string $sort_by ) : bool {
         /** @var string $sanitized_sort_by */
         $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
         /** @var bool $validate_sort_by */
         $validate_sort_by = $this->validateSortBy( $errors, $sanitized_sort_by );
+        /** @var int $user_id */
+        $user_id = Session::get('user_id');
 
         if( $validate_sort_by ) {
             
@@ -167,7 +170,6 @@ final class Challenges extends AbstractModel {
             /** @var string $parse_sort_by */
             $parsed_sort_by = $this->parseSortBy( $sanitized_sort_by );
 
-            var_dump($parsed_sort_by);
             $query = 
             'SELECT 
                 c.title, 

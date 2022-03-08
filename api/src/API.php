@@ -2,6 +2,8 @@
 
 namespace WBD5204;
 
+use WBD5204\Session as Session;
+
 final class API {
     const ERROR_CONTROLLER = 'API\\Controller\\Error';
     const ERROR_METHOD = 'index';
@@ -12,10 +14,11 @@ final class API {
 
     public function __construct() {
         $this->request = $this->parseRequest();
+
+        Session::start();
     }
 
     public function run() : void {
-        Session::start();
 
         // URL auslesen
         if ( $this->controllerExists() && $this->controllerMethodExists() ) {

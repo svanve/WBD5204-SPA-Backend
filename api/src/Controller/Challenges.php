@@ -20,9 +20,10 @@ final class Challenges extends AbstractController {
         /** @var array $errors */
         $errors = [];
 
-        if ( $this->UserModel->isLoggedIn($errors) ) {
-            $this->user_id = $this->UserModel->getLoggedInUser( 'id' );
-        };
+
+        // if ( $this->UserModel->isLoggedIn($errors) ) {
+        //     $this->user_id = $this->UserModel->getLoggedInUser( 'id' );
+        // };
     }
 
     // @DELETE
@@ -46,7 +47,7 @@ final class Challenges extends AbstractController {
         /** @var array $results */
         $results = [];
 
-        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getCommunityChallenges( $errors, $results, $this->user_id, 'id' )) {
+        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getCommunityChallenges( $errors, $results, 'id' )) {
             $this->responseCode(200);
             $this->printJSON( [ 'success' => true, 'results' => $results ] );
         } else {
@@ -77,9 +78,8 @@ final class Challenges extends AbstractController {
         $errors = [];
         /** @var array $data */
         $result = [];
-        
 
-        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getCommunityChallenges( $errors, $result, $this->user_id, $sort_by )) {
+        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getCommunityChallenges( $errors, $result, $sort_by )) {
             $this->responseCode(200);
             $this->printJSON( ['success' => true, 'result' => $result ] );
         } else {

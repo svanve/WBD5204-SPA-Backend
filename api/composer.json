@@ -5,5 +5,7 @@
             "WBD5204\\": "src/"
         }
     },
-    "require": {}
+    "require": {
+        "firebase/php-jwt": "5.4"
+    }
 }
