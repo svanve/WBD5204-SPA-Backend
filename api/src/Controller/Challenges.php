@@ -11,7 +11,7 @@ use WBD5204\Authorize;
 final class Challenges extends AbstractController {
 
     /** @var ?int $user_id */
-    public $user_id = 2;
+    public $user_id = NULL;
 
     public function __construct() {
         $this->ChallengeModel = new ChallengeModel();
@@ -22,9 +22,9 @@ final class Challenges extends AbstractController {
         $errors = [];
 
 
-        // if ( $this->UserModel->isLoggedIn($errors) ) {
-        //     $this->user_id = $this->UserModel->getLoggedInUser( 'id' );
-        // };
+        if ( $this->UserModel->isLoggedIn($errors) ) {
+            $this->user_id = $this->UserModel->getLoggedInUser( 'id' );
+        };
     }
 
     // @DELETE
@@ -32,7 +32,10 @@ final class Challenges extends AbstractController {
         /** @var array $errors */
         $errors = [];
         
-        if ($this->isMethod( self::METHOD_DELETE ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->delete( $errors, $challenge_id )) {
+        if ($this->isMethod( self::METHOD_DELETE ) 
+        && $this->UserModel->isLoggedIn( $errors ) 
+        && $this->ChallengeModel->delete( $errors, $challenge_id )) {
+        
             $this->responseCode(200);
             $this->printJSON( ['success' => true] );
         } else {
@@ -48,7 +51,10 @@ final class Challenges extends AbstractController {
         /** @var array $results */
         $results = [];
 
-        if ($this->isMethod( self::METHOD_GET ) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->getCommunityChallenges( $errors, $results, 'id' )) {
+        if ($this->isMethod( self::METHOD_GET ) 
+        && $this->UserModel->isLoggedIn( $errors ) 
+        && $this->ChallengeModel->getCommunityChallenges( $errors, $results, 'id' )) {
+                
             $this->responseCode(200);
             $this->printJSON( [ 'success' => true, 'results' => $results ] );
         } else {
@@ -128,7 +134,10 @@ final class Challenges extends AbstractController {
         /** @var array $errors */
         $errors = [];
     
-        if ($this->isMethod( self::METHOD_POST) && $this->UserModel->isLoggedIn( $errors ) && $this->ChallengeModel->write( $this->user_id, $errors )) {
+        if ($this->isMethod( self::METHOD_POST) 
+        && Authorize::authorizeToken( $errors )
+        && $this->UserModel->isLoggedIn( $errors ) 
+        && $this->ChallengeModel->write( $this->user_id, $errors )) {
             $this->responseCode(201);
             $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken() ] );
         } else {
