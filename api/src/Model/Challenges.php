@@ -4,6 +4,7 @@ namespace WBD5204\Model;
 
 use WBD5204\Model as AbstractModel;
 use WBD5204\Session as Session;
+use WBD5204\Model\User as UserModel;
 
 final class Challenges extends AbstractModel {
 
@@ -97,8 +98,6 @@ final class Challenges extends AbstractModel {
         $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
         /** @var bool $validate_sort_by */
         $validate_sort_by = $this->validateSortBy( $errors, $sanitized_sort_by );
-        /** @var int $user_id */
-        $user_id = Session::get('user_id');
 
         if( $validate_sort_by ) {
             
@@ -146,8 +145,9 @@ final class Challenges extends AbstractModel {
 
             ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
 
+
             $statement = $this->Database->prepare( $query );
-            $statement->bindValue( ':user_id', $user_id );
+            $statement->bindValue( ':user_id', $results['user_id'] );
             $statement->execute();
 
             $results = $statement->fetchAll();
@@ -159,7 +159,7 @@ final class Challenges extends AbstractModel {
         
     }
     
-    public function getMyChallenges( array &$errors, array &$results, int $user_id, string $sort_by ) : bool {
+    public function getMyChallenges( array &$errors, array &$results, string $sort_by ) : bool {
         /** @var string $sanitized_sort_by */
         $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
         /** @var bool $validate_sort_by */
@@ -212,7 +212,7 @@ final class Challenges extends AbstractModel {
             ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
 
             $statement = $this->Database->prepare( $query );
-            $statement->bindValue( 'user_id', $user_id );
+            $statement->bindValue( 'user_id', $results['user_id'] );
             $statement->execute();
 
             $results = $statement->fetchAll();
@@ -366,16 +366,24 @@ final class Challenges extends AbstractModel {
         /** @var bool $validate_description */
         $validate_description = $this->validateDescription($errors, $input_description);
 
+        // image_id input
+        $user = new UserModel();
+        $image_id = $user->getImageId( $user_id );
+
         if ($validate_user_id && $validate_pokemon_id && $validate_question_id && $validate_title && $validate_description === TRUE) {
 
             /** @var \PDOStatement $query */
-            $query = 'INSERT INTO challenges (pokemon_id, question_id, title, description, author_id) VALUES (:pokemon_id, :question_id, :title, :description, :author_id)';
+            $query = 
+                'INSERT INTO challenges (pokemon_id, question_id, title, description, author_id, image_id) 
+                VALUES (:pokemon_id, :question_id, :title, :description, :author_id, :image_id)';
+
             $statement = $this->Database->prepare( $query );
-            $statement->bindValue( ':author_id',      $user_id );
-            $statement->bindValue( ':pokemon_id',      $input_pokemon_id );
-            $statement->bindValue( ':question_id',     $input_question_id );
+            $statement->bindValue( ':author_id',    $user_id );
+            $statement->bindValue( ':pokemon_id',   $input_pokemon_id );
+            $statement->bindValue( ':question_id',  $input_question_id );
             $statement->bindValue( ':title',        $input_title );
             $statement->bindValue( ':description',  $input_description );
+            $statement->bindValue( ':image_id',  $image_id );
             $statement->execute();
 
             return $statement->rowCount() > 0;
