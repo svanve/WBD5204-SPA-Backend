@@ -180,9 +180,6 @@ final class User extends AbstractModel {
     public function logout( array &$errors = [], array &$success = [] ) : bool {
 
         // Session::delete('user_id');
-        
-        // delete Token from localStorage
-
 
         if (!isset($_SESSION['user_id'])) {
             $success['logout'][] = 'Du wurdest erfolgreich ausgeloggt.';
