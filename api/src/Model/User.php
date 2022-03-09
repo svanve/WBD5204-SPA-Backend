@@ -64,7 +64,22 @@ final class User extends AbstractModel {
     }
 
 
-    public function getLoggedInUser( ?string $param = 'id' ) : int|string {
+    public function getImageId( string $user_id ) : string {
+        /** @var string $query */
+        $query = 'SELECT image_id FROM users WHERE id = :user_id';
+
+        /** @var \PDOStatement $statement */
+        $statement = $this->Database->prepare( $query );
+        $statement->bindValue( ':user_id', $user_id );
+        $statement->execute();
+
+        $result = $statement->fetch();
+
+        return $result['image_id'];
+    }
+
+
+    private function getLoggedInUser( ?string $param = 'id' ) : int|string {
         $user_id = Session::get('user_id');
 
         if ( $param === 'id' ) {
@@ -105,16 +120,16 @@ final class User extends AbstractModel {
     }
 
 
-    // public function isLoggedIn( array &$errors ) : bool {
+    public function isLoggedIn( array &$errors ) : bool {
 
-    //     if ( !Session::exists('user_id') ) {
+        if ( !Session::exists('user_id') ) {
 
-    //         $errors['session'][] = 'Du musst dich zuerst einloggen.';
-    //         return FALSE;
-    //     }
+            $errors['session'][] = 'Du musst dich zuerst einloggen.';
+            return FALSE;
+        }
     
-    //     return TRUE;
-    // }
+        return TRUE;
+    }
 
     
     public function login( array &$errors = [], array &$result = [] ) : bool {
