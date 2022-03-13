@@ -147,13 +147,14 @@ final class Challenges extends AbstractModel {
 
 
             $statement = $this->Database->prepare( $query );
-            $statement->bindValue( ':user_id', $results['user_id'] );
+            $statement->bindValue( ':user_id', Session::get( 'user_id' ) );
             $statement->execute();
 
             $results = $statement->fetchAll();
 
             return count( $results ) > 0;
         } else {
+
             return FALSE;
         }
         
@@ -212,7 +213,8 @@ final class Challenges extends AbstractModel {
             ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
 
             $statement = $this->Database->prepare( $query );
-            $statement->bindValue( 'user_id', $results['user_id'] );
+            // $statement->bindValue( 'user_id', Session::get( 'user_id' ) );
+            $statement->bindValue( 'user_id', 2 );
             $statement->execute();
 
             $results = $statement->fetchAll();
@@ -240,6 +242,7 @@ final class Challenges extends AbstractModel {
     }
 
     public function update( array &$errors, ?string $challenge_id ) : bool {
+
         /** @var array $form_data */
         $form_data = $this->getFormData();
         /** @var ?string $input_title */
@@ -255,17 +258,21 @@ final class Challenges extends AbstractModel {
         $validate_title = $this->validateTitle( $errors, $input_title );
         /** @var bool $validate_description */
         $validate_description = $this->validateDescription( $errors, $input_description );
-        /** @var bool $validate_challenge_id */
-        $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
+        /** @var bool $validate_pokemon_id */
+        $validate_pokemon_id = $this->validatePokemonId( $errors, $input_pokemon_id );
+        /** @var bool $validate_question_id */
+        $validate_question_id = $this->validateQuestionId( $errors, $input_question_id );
 
-        if ( $validate_challenge_id && $validate_title && $validate_description && $validate_pokemon_id && $validate_question_id ) {
+        if ( $validate_title && $validate_description && $validate_pokemon_id && $validate_question_id ) {
             /** @var string $query */
-            $query = 'UPDATE challenges SET title = :title, description = :description WHERE id = :id';
+            $query = 'UPDATE challenges SET title = :title, description = :description, pokemon_id = :pokemon_id, question_id = :question_id WHERE id = :id';
             /** @var \PDOStatement $statement */
             $statement = $this->Database->prepare( $query );
-            $statement->bindValue( 'title', $input_title );
-            $statement->bindValue( 'description', $input_description );
-            $statement->bindValue( 'id', $challenge_id );
+            $statement->bindValue( ':title', $input_title );
+            $statement->bindValue( ':description', $input_description );
+            $statement->bindValue( ':pokemon_id', $input_pokemon_id );
+            $statement->bindValue( ':question_id', $input_question_id );
+            $statement->bindValue( ':id', $challenge_id );
             $statement->execute();
 
             return $statement->rowCount() > 0;
@@ -296,7 +303,7 @@ final class Challenges extends AbstractModel {
         return isset($errors[ 'description' ]) === FALSE || count($errors[ 'description' ]) === 0;
     }
 
-    private function validatePokemonID( array &$errors, ?string $pokemon_id ) : bool {
+    private function validatePokemonId( array &$errors, ?string $pokemon_id ) : bool {
         if ( is_null($pokemon_id) || empty($pokemon_id) ) {
             $errors['pokemon_id'][] = 'Bitte gib eine Pokemon-ID an';
         }

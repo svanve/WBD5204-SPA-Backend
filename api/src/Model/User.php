@@ -7,6 +7,7 @@ use WBD5204\Session as Session;
 
 final class User extends AbstractModel {
 
+
     public function comparePasswords( array $credentials, string $user_input ) : bool { 
         /** @var string $hashed_salt */
         $hashed_salt = $credentials['salt'];
@@ -122,12 +123,13 @@ final class User extends AbstractModel {
 
     public function isLoggedIn( array &$errors ) : bool {
 
+        
         if ( !Session::exists('user_id') ) {
 
             $errors['session'][] = 'Du musst dich zuerst einloggen.';
             return FALSE;
         }
-    
+
         return TRUE;
     }
 
@@ -159,8 +161,10 @@ final class User extends AbstractModel {
                 $errors['password'][] = 'Der Username oder das Passwort ist falsch.';
                 return $compare_passwords;
             }
-            
+
             $result['user_id'] = $credentials['id'];
+            
+            // Session::set('user_id', $credentials['id']);
             
             return $compare_passwords;
         }
@@ -179,7 +183,7 @@ final class User extends AbstractModel {
 
     public function logout( array &$errors = [], array &$success = [] ) : bool {
 
-        // Session::delete('user_id');
+        Session::delete('user_id');
 
         if (!isset($_SESSION['user_id'])) {
             $success['logout'][] = 'Du wurdest erfolgreich ausgeloggt.';
@@ -328,8 +332,8 @@ final class User extends AbstractModel {
             $errors['password'][] = 'Bitte wiederhole das Passwort richtig.';
         }
         
-        return  ( isset($errors['password'])        === FALSE || count($errors['password'])         === 0 ) &&
-        ( isset($errors['password_repeat']) === FALSE || count($errors['password_repeat'])  === 0 );
+        return ( isset($errors['password']) === FALSE || count($errors['password']) === 0 ) &&
+        ( isset($errors['password_repeat']) === FALSE || count($errors['password_repeat']) === 0 );
     }
                 
     public function validateUsername( array &$errors, ?string $username ) : bool {

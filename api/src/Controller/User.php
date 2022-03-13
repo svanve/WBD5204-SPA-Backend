@@ -6,6 +6,7 @@ use WBD5204\Controller as AbstractController;
 use WBD5204\Model\User as UserModel;
 use WBD5204\Model\Images as ImagesModel;
 use WBD5204\Authorize;
+use WBD5204\Session;
 
 final class User extends AbstractController {
 
@@ -21,7 +22,6 @@ final class User extends AbstractController {
         $result = [];
 
         if( $this->isMethod(self::METHOD_POST) && $this->user->login($errors, $result) ) {
-            
             $this->responseCode( 200 );
             $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken( $result['user_id'] ) ] );
         } 
@@ -42,7 +42,7 @@ final class User extends AbstractController {
 
         if($this->isMethod(self::METHOD_POST) && $image->uploadImage($errors, $result) && $this->user->register($errors, $result)) {
             $this->responseCode( 201 );
-            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken() ] );
+            $this->printJSON( ['success' => true] );
         }
         else {
             $this->responseCode( 400 );
@@ -57,9 +57,9 @@ final class User extends AbstractController {
         /** @var array $success */
         $success = [];
 
-        if($this->isMethod(self::METHOD_PUT) && $this->user->logout( $errors, $success )) {
+        if($this->isMethod(self::METHOD_PUT) && $this->user->logout($errors, $success)) {
             $this->responseCode( 200 );
-            $this->printJSON( ['success' => $success, 'jwt' => Authorize::createToken() ] ); // hier auch token?
+            $this->printJSON( ['success' => $success] );
         }
         else {
             $this->responseCode( 400 );

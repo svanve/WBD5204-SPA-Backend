@@ -18,7 +18,28 @@ final class API {
     }
 
     public function run() : void {
-        Session::start();
+
+
+
+
+        // ini_set("session.cookie_domain", 'localhost');
+        // session_set_cookie_params(3600, '/', 'localhost');
+
+        // if(!isset($_SESSION)) {
+        //     // Session::start();
+        //     session_start();
+        // }
+
+        // $http_origin = $_SERVER['HTTP_ORIGIN'];
+        // if ($http_origin == "http://dev.local:3000" || $http_origin == "http://localhost:3000"){
+        //     header("Access-Control-Allow-Origin: $http_origin");
+        // }
+        
+        header("Access-Control-Allow-Origin: http://localhost:3000");
+        header('Access-Control-Allow-Methods: GET, POST, PATCH, UPDATE, DELETE, OPTIONS');
+        header('Access-Control-Allow-Headers: Origin, Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept');
+        header('Access-Control-Allow-Credentials: true');
+
 
         // URL auslesen
         if ( $this->controllerExists() && $this->controllerMethodExists() ) {
