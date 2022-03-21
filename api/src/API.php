@@ -19,9 +19,6 @@ final class API {
 
     public function run() : void {
 
-
-
-
         // ini_set("session.cookie_domain", 'localhost');
         // session_set_cookie_params(3600, '/', 'localhost');
 
@@ -35,7 +32,7 @@ final class API {
         //     header("Access-Control-Allow-Origin: $http_origin");
         // }
         
-        header("Access-Control-Allow-Origin: http://localhost:3000");
+        header("Access-Control-Allow-Origin: *");
         header('Access-Control-Allow-Methods: GET, POST, PATCH, UPDATE, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Origin, Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept');
         header('Access-Control-Allow-Credentials: true');
