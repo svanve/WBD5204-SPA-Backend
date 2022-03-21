@@ -43,24 +43,24 @@ final class Challenges extends AbstractController {
         }
     }
     
-    // @GET
-    public function index() : void {
-        /** @var array $errors */
-        $errors = [];
-        /** @var array $results */
-        $results = [];
+    // // @GET
+    // public function index() : void {
+    //     /** @var array $errors */
+    //     $errors = [];
+    //     /** @var array $results */
+    //     $results = [];
 
-        if ($this->isMethod( self::METHOD_GET ) 
-        && ($this->UserModel->isLoggedIn( $errors ))
-        && $this->ChallengeModel->getCommunityChallenges( $errors, $results, 'id' )) {
+    //     if ($this->isMethod( self::METHOD_GET ) 
+    //     && ($this->UserModel->isLoggedIn( $errors ))
+    //     && $this->ChallengeModel->getCommunityChallenges( $errors, $results, 'id' )) {
         
-            $this->responseCode(200);
-            $this->printJSON( [ 'success' => true, 'results' => $results, 'jwt' => Authorize::createToken( $result['user_id'] ) ] );
-        } else {
-            $this->responseCode(400);
-            $this->printJSON( [ 'errors' => $errors ] );
-        }
-    }
+    //         $this->responseCode(200);
+    //         $this->printJSON( [ 'success' => true, 'results' => $results, 'jwt' => Authorize::createToken( $result['user_id'] ) ] );
+    //     } else {
+    //         $this->responseCode(400);
+    //         $this->printJSON( [ 'errors' => $errors ] );
+    //     }
+    // }
     
     // // @GET 
     // public function getById( ?int $challenge_id = NULL ) : void {
