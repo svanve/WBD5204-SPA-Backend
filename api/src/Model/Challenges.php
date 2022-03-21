@@ -28,70 +28,70 @@ final class Challenges extends AbstractModel {
         }
     }
 
-    public function getChallengeById( array &$errors, array &$result, ?int $challenge_id ) : bool {
-        /** @var bool $validate_challenge_id */
-        $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
+    // public function getChallengeById( array &$errors, array &$result, ?int $challenge_id ) : bool {
+    //     /** @var bool $validate_challenge_id */
+    //     $validate_challenge_id = $this->validateChallengeId( $errors, $challenge_id );
 
-        if ($validate_challenge_id) {
+    //     if ($validate_challenge_id) {
 
-            $query = 
-            'SELECT 
-                c.title, 
-                c.description, 
-                c.id,
+    //         $query = 
+    //         'SELECT 
+    //             c.title, 
+    //             c.description, 
+    //             c.id,
                 
-                u.username,
-                i2.filename,
+    //             u.username,
+    //             i2.filename,
                 
-                p.name, 
-                p.level, 
-                p.pokedex_no,
+    //             p.name, 
+    //             p.level, 
+    //             p.pokedex_no,
                 
-                q.question_level, 
-                q.content, 
-                q.right_answer, 
-                q.wrong_answer_1, 
-                q.wrong_answer_2, 
-                q.wrong_answer_3
+    //             q.question_level, 
+    //             q.content, 
+    //             q.right_answer, 
+    //             q.wrong_answer_1, 
+    //             q.wrong_answer_2, 
+    //             q.wrong_answer_3
 
-            FROM challenges AS c
+    //         FROM challenges AS c
             
-            JOIN users AS u
-                ON c.author_id = u.id
+    //         JOIN users AS u
+    //             ON c.author_id = u.id
 
-            JOIN images AS i1
-                ON c.image_id = i1.id
+    //         JOIN images AS i1
+    //             ON c.image_id = i1.id
 
-            JOIN images AS i2
-                ON u.image_id = i2.id
+    //         JOIN images AS i2
+    //             ON u.image_id = i2.id
             
-            JOIN pokemons AS p
-                ON c.pokemon_id = p.id
+    //         JOIN pokemons AS p
+    //             ON c.pokemon_id = p.id
             
-            JOIN questions AS q
-                ON c.question_id = q.id
+    //         JOIN questions AS q
+    //             ON c.question_id = q.id
             
-            WHERE c.id = :id';
+    //         WHERE c.id = :id';
         
-            $statement = $this->Database->prepare( $query );
-            $statement->bindValue( ':id', $challenge_id );
-            $statement->execute();
+    //         $statement = $this->Database->prepare( $query );
+    //         $statement->bindValue( ':id', $challenge_id );
+    //         $statement->execute();
 
-            $result = $statement->fetch();
+    //         $result = $statement->fetch();
 
-            if ( !$result ) {
-                $errors['challenge_by_id'][] = 'Die Challenge existiert nicht.';
+    //         if ( !$result ) {
+    //             $errors['challenge_by_id'][] = 'Die Challenge existiert nicht.';
 
-                return FALSE;
-            }
+    //             return FALSE;
+    //         }
 
-            return count( $result ) > 0;
+    //         return count( $result ) > 0;
 
-        } else {
+    //     } else {
 
-            return FALSE;
-        }
-    }
+    //         return FALSE;
+    //     }
+    // }
     
     public function getCommunityChallenges( array &$errors, array &$results, string $sort_by ) : bool {
         /** @var string $sanitized_sort_by */
@@ -109,6 +109,7 @@ final class Challenges extends AbstractModel {
                 c.title, 
                 c.description, 
                 c.id,
+                c.question_id,
                 
                 u.username,
                 i2.filename,
@@ -176,6 +177,7 @@ final class Challenges extends AbstractModel {
                 c.title, 
                 c.description, 
                 c.id,
+                c.question_id,
                 
                 u.username,
                 i2.filename,
