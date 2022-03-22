@@ -32,7 +32,7 @@ final class Challenges extends AbstractController {
         // TODO: Überprüfen ob challenge id zu user gehört!
         
         if ($this->isMethod( self::METHOD_DELETE ) 
-        && ($this->UserModel->isLoggedIn( $errors ))
+        // && ($this->UserModel->isLoggedIn( $errors ))
         && $this->ChallengeModel->delete( $errors, $challenge_id )) {
         
             $this->responseCode(200);
@@ -109,6 +109,7 @@ final class Challenges extends AbstractController {
 
         if ($this->isMethod( self::METHOD_GET ) 
         // && ($this->UserModel->isLoggedIn( $errors ))
+        && Authorize::authorizeToken( $errors, $result )
         && $this->ChallengeModel->getMyChallenges( $errors, $result, $sort_by )) {
             $this->responseCode(200);
             $this->printJSON( ['success' => true, 'result' => $result] );

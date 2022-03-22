@@ -32,11 +32,18 @@ final class API {
         //     header("Access-Control-Allow-Origin: $http_origin");
         // }
         
+        
         header("Access-Control-Allow-Origin: *");
-        header('Access-Control-Allow-Methods: GET, POST, PATCH, UPDATE, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: Origin, Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept');
+
+        header('Access-Control-Allow-Methods: *');
+        header('Access-Control-Allow-Headers: Content-Type');
         header('Access-Control-Allow-Credentials: true');
 
+        // header('Access-Control-Allow-Methods: GET, POST, PATCH, UPDATE, DELETE, OPTIONS');
+        // header('Access-Control-Allow-Headers: Origin, Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept');
+        // header('Access-Control-Allow-Credentials: true');
+
+        
 
         // URL auslesen
         if ( $this->controllerExists() && $this->controllerMethodExists() ) {
