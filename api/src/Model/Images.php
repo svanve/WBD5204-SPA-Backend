@@ -28,6 +28,20 @@ final class Images extends AbstractModel {
         return TRUE;
     }    
 
+    public function addImageAs64( array &$errors, array &$result ) : bool {
+
+        foreach($result as $i => $challenge) {
+            $dir_filename = str_replace( '/' , DIRECTORY_SEPARATOR, $challenge['filename']);
+
+            $b64image = base64_encode(file_get_contents(UPLOADS_PATH . DIRECTORY_SEPARATOR . $dir_filename));    
+
+            $result[$i]['base64'] = $b64image;
+        }
+
+        return true;
+
+    }
+
     private function insertIntoDatabase( array &$errors, array &$result ) : bool {
         $filename = $result[ 'filename' ];
 
@@ -63,7 +77,6 @@ final class Images extends AbstractModel {
                 return FALSE;
             }
 
-            var_dump($sql_result);
             $parsed_sql_result = $this->parseResult( $sql_result[ 'filename' ]);
             $result = [ ...$result, ...$parsed_sql_result ];
             
