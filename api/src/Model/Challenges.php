@@ -52,6 +52,7 @@ final class Challenges extends AbstractModel {
                 p.name, 
                 p.level, 
                 p.pokedex_no,
+                p.svg,
                 
                 q.question_level, 
                 q.content, 
@@ -120,6 +121,7 @@ final class Challenges extends AbstractModel {
                 p.name, 
                 p.level, 
                 p.pokedex_no,
+                p.svg,
                 
                 q.question_level, 
                 q.content, 
@@ -229,8 +231,8 @@ final class Challenges extends AbstractModel {
         if (is_null($description) || empty($description)) {
             $errors['description'][] = 'Bitte gib eine Beschreibung für die Challenge ein.';
         }
-        if (strlen($description) > 140) {
-            $errors['description'][] = 'Die Beschreibung sollte maxmimal 140 Zeichen lang sein.';
+        if (strlen($description) > 88) {
+            $errors['description'][] = 'Die Beschreibung sollte maxmimal 88 Zeichen lang sein.';
         }
         if (strlen($description) < 20) {
             $errors['description'][] = 'Die Beschreibung sollte mindestens 20 Zeichen lang sein.';
