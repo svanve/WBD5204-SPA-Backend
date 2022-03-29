@@ -91,12 +91,10 @@ final class Challenges extends AbstractController {
         /** @var array $errors */
         $errors = [];
 
-        // TODO: Überprüfen ob challenge id zu user gehört!
-        
+
         if ($this->isMethod( self::METHOD_PUT)
         // && ($this->UserModel->isLoggedIn( $errors )) 
         // && Authorize::authorizeToken( $errors, $result )
-       
         && $this->ChallengeModel->update( $errors, $challenge_id )) {
             $this->responseCode(200);
             $this->printJSON( ['success' => true] );
@@ -112,6 +110,7 @@ final class Challenges extends AbstractController {
         $errors = [];
         /** @var array $result */
         $result = [];
+        
     
         if ($this->isMethod( self::METHOD_POST) 
         // && ($this->UserModel->isLoggedIn( $errors )) 
