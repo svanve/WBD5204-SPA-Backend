@@ -18,9 +18,11 @@ final class Images extends AbstractController {
         /** @var array $result */
         $result = [];
 
-        if ( $this->isMethod( self::METHOD_POST ) && $this->ImagesModel->uploadImage( $errors, $result ) ) {
+        if ( $this->isMethod( self::METHOD_POST ) 
+        // && Authorize::authorizeToken( $errors, $result )
+        && $this->ImagesModel->uploadImage( $errors, $result ) ) {
             $this->responseCode(200);
-            $this->printJSON( [ 'success' => true, 'result' => $result ]);
+            $this->printJSON( [ 'success' => true, 'result' => $result, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */ ]);
         } else {
             $this->responseCode(400);
             $this->printJSON( [ 'errors' => $errors ] );
@@ -35,9 +37,11 @@ final class Images extends AbstractController {
         /** @var array $result */
         $result = [];
 
-        if ( $this->isMethod( self::METHOD_GET ) && $this->ImagesModel->getImagePath( $errors, $result, $image_id ) ) {
+        if ( $this->isMethod( self::METHOD_GET ) 
+        // && Authorize::authorizeToken( $errors, $result )
+        && $this->ImagesModel->getImagePath( $errors, $result, $image_id ) ) {
             $this->responseCode(200);
-            $this->printJSON( [ 'success' => true, 'result' => $result ] );
+            $this->printJSON( [ 'success' => true, 'result' => $result, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */ ] );
         } else {
             $this->responseCode(400);
             $this->printJSON( [ 'errors' => $errors ] );
