@@ -5,9 +5,23 @@ namespace WBD5204\Model;
 use WBD5204\Model as AbstractModel;
 
 final class Images extends AbstractModel {
-
+    
     const UPLOADS_DIR = UPLOADS_DIR;
 
+    public function addImageAs64( array &$errors, array &$result ) : bool {
+    
+        foreach($result as $i => $challenge) {
+            $dir_filename = str_replace( '/' , DIRECTORY_SEPARATOR, $challenge['filename']);
+    
+            $b64image = base64_encode(file_get_contents(UPLOADS_PATH . DIRECTORY_SEPARATOR . $dir_filename));    
+    
+            $result[$i]['base64'] = $b64image;
+        }
+    
+        return true;
+    
+    }
+    
     private function createDateCodedPath() : string {
         /** @var string $date */
         $date = date( 'Y.m.d', time() );
@@ -15,32 +29,19 @@ final class Images extends AbstractModel {
         $code = explode( '.', $date );
         /** @var string $path */
         $path = implode( DIRECTORY_SEPARATOR, $code );
-
+        
         return $path;
     }
-
+    
     private function createFolder( string $dir ) : bool {
         if ( file_exists( $dir ) === FALSE ) {
-
+            
             return (bool) mkdir( $dir, 0777, TRUE );
         }
 
         return TRUE;
     }    
 
-    public function addImageAs64( array &$errors, array &$result ) : bool {
-
-        foreach($result as $i => $challenge) {
-            $dir_filename = str_replace( '/' , DIRECTORY_SEPARATOR, $challenge['filename']);
-
-            $b64image = base64_encode(file_get_contents(UPLOADS_PATH . DIRECTORY_SEPARATOR . $dir_filename));    
-
-            $result[$i]['base64'] = $b64image;
-        }
-
-        return true;
-
-    }
 
     private function insertIntoDatabase( array &$errors, array &$result ) : bool {
         $filename = $result[ 'filename' ];
