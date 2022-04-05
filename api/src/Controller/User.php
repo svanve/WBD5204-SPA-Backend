@@ -12,6 +12,27 @@ final class User extends AbstractController {
 
     public function __construct() {
         $this->user = new UserModel();
+        $this->ImagesModel = new ImagesModel();
+    }
+
+    // @GET
+    public function getProfile() : void {
+        /** @var array $errors */
+        $errors = [];
+        /** @var array $result */
+        $result = [];
+
+        if( $this->isMethod(self::METHOD_GET) 
+        // && Authorize::authorizeToken( $errors, $result )
+        && $this->user->getProfile($errors, $result, 2) 
+        && $this->ImagesModel->addImageAs64($errors, $result) ) {
+            $this->responseCode( 200 );
+            $this->printJSON( ['success' => true, 'result' => $result, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */] );
+        } 
+        else {
+            $this->responseCode( 400 );
+            $this->printJSON( ['errors' => $errors] );
+        }
     }
 
     // @POST
@@ -21,9 +42,10 @@ final class User extends AbstractController {
         /** @var array $result */
         $result = [];
 
-        if( $this->isMethod(self::METHOD_POST) && $this->user->login($errors, $result) ) {
+        if( $this->isMethod(self::METHOD_POST)
+        && $this->user->login($errors, $result) ) {
             $this->responseCode( 200 );
-            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken( $result['user_id'] ) ] );
+            $this->printJSON( ['success' => true, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */ ] );
         } 
         else {
             $this->responseCode( 400 );
@@ -40,9 +62,11 @@ final class User extends AbstractController {
 
         $image = new ImagesModel();
 
-        if($this->isMethod(self::METHOD_POST) && $image->uploadImage($errors, $result) && $this->user->register($errors, $result)) {
+        if($this->isMethod(self::METHOD_POST) 
+        && $image->uploadImage($errors, $result) 
+        && $this->user->register($errors, $result)) {
             $this->responseCode( 201 );
-            $this->printJSON( ['success' => true] );
+            $this->printJSON( ['success' => true, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */] );
         }
         else {
             $this->responseCode( 400 );
@@ -57,9 +81,10 @@ final class User extends AbstractController {
         /** @var array $success */
         $success = [];
 
-        if($this->isMethod(self::METHOD_PUT) && $this->user->logout($errors, $success)) {
+        if($this->isMethod(self::METHOD_PUT) 
+        && $this->user->logout($errors, $success)) {
             $this->responseCode( 200 );
-            $this->printJSON( ['success' => $success] );
+            $this->printJSON( ['success' => $success, /* Here I would destroy the token, since i couldn't test it I leave it like this */] );
         }
         else {
             $this->responseCode( 400 );
