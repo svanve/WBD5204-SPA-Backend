@@ -316,7 +316,7 @@ final class Challenges extends AbstractModel {
         $image_id = $user->getImageId( $user_id );
 
         if ($validate_user_id && $validate_pokemon_id && $validate_question_id && $validate_title && $validate_description === TRUE) {
-
+            
             /** @var \PDOStatement $query */
             $query = 
                 'INSERT INTO challenges (pokemon_id, question_id, title, description, author_id, image_id) 
