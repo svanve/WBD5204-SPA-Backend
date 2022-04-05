@@ -197,6 +197,31 @@ final class User extends AbstractModel {
         }
     }
     
+    public function getProfile( array &$errors, array &$result, int $user_id ) : bool {
+        $query = 
+        'SELECT 
+            u.firstname,
+            u.lastname,
+            u.username,
+            u.email,
+
+            i.filename
+             
+        FROM users AS u
+        
+        JOIN images AS i
+            ON u.image_id = i.id
+        
+        WHERE u.id = :id'; 
+
+        $statement = $this->Database->prepare($query);
+        $statement->bindValue( ':id', 2 );
+        $statement->execute();
+        $result = $statement->fetchAll();
+
+        return count( $result ) > 0;
+    }
+
     public function register( array &$errors = [], array &$result = [] ) : bool {
         
         /** @var string $input_firstname */
