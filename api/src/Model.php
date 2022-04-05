@@ -11,6 +11,7 @@ abstract class Model {
     }
 
     public function getFormData() : array {
+
         /** @var array $data */
         $data = [];
         // read incoming data, then we have to parse the request into array
