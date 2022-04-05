@@ -18,9 +18,10 @@ final class Pokemons extends AbstractController {
         $results = [];
 
         if ($this->isMethod( self::METHOD_GET ) 
+        // && Authorize::authorizeToken( $errors, $result )
         && $this->PokemonModel->get( $errors, $results )) {
             $this->responseCode(200);
-            $this->printJSON( ['success' => true, 'result' => $results] );
+            $this->printJSON( ['success' => true, 'result' => $results, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */] );
         } else {
             $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] );
