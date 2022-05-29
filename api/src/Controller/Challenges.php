@@ -48,7 +48,6 @@ final class Challenges extends AbstractController {
         /** @var array $data */
         $result = [];
 
-
         if ($this->isMethod( self::METHOD_GET ) 
         // && Authorize::authorizeToken( $errors, $result )
         && $this->ChallengeModel->getCommunityChallenges( $errors, $result, $sort_by )

@@ -11,9 +11,9 @@ final class Images extends AbstractModel {
     public function addImageAs64( array &$errors, array &$result ) : bool {
     
         foreach($result as $i => $challenge) {
-            $dir_filename = str_replace( '/' , DIRECTORY_SEPARATOR, $challenge['filename']);
-    
-            $b64image = base64_encode(file_get_contents(UPLOADS_PATH . DIRECTORY_SEPARATOR . $dir_filename));    
+            $dir_filename = str_replace( '\\' , DIRECTORY_SEPARATOR, $challenge['filename']);
+
+            $b64image = base64_encode(file_get_contents(UPLOADS_PATH . DIRECTORY_SEPARATOR . $dir_filename));  
     
             $result[$i]['base64'] = $b64image;
         }
