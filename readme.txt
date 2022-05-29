@@ -9,10 +9,6 @@
 - User drei:
     User1113, User1113!
 
-- Silvan van Veen
-    Kamelfluesterer, Sagtiev1! 
-
-
 # H2 Authorization Token JWT:
 
 Die Klasse Authorization.php steht einwandfrei. Beim erfolgreichen Login wird ein JWT Token erstellt (jwt library firebase) und 
