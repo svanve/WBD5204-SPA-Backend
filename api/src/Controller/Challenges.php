@@ -28,13 +28,14 @@ final class Challenges extends AbstractController {
     public function delete( ?int $challenge_id = NULL ) : void {
         /** @var array $errors */
         $errors = [];
+        /** @var array $result */
+        $result = [];
         
         if ($this->isMethod( self::METHOD_DELETE ) 
-        // && Authorize::authorizeToken( $errors, $result )
+        && Authorize::authorizeToken( $errors, $result )
         && $this->ChallengeModel->delete( $errors, $challenge_id )) {
-        
             $this->responseCode(200);
-            $this->printJSON( ['success' => true, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */ ] );
+            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken( $result['user_id'] ) ] );
         } else {
             $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] );
@@ -49,11 +50,11 @@ final class Challenges extends AbstractController {
         $result = [];
 
         if ($this->isMethod( self::METHOD_GET ) 
-        // && Authorize::authorizeToken( $errors, $result )
+        && Authorize::authorizeToken( $errors, $result )
         && $this->ChallengeModel->getCommunityChallenges( $errors, $result, $sort_by )
         && $this->ImagesModel->addImageAs64( $errors, $result ) ) {
             $this->responseCode(200);
-            $this->printJSON( ['success' => true, 'result' => $result, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */ ] );
+            $this->printJSON( ['success' => true, 'result' => $result['results'], 'jwt' => Authorize::createToken( $result['user_id'] ) ] );
         } else {
             $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] ); 
@@ -69,11 +70,11 @@ final class Challenges extends AbstractController {
 
 
         if ($this->isMethod( self::METHOD_GET ) 
-        // && Authorize::authorizeToken( $errors, $result )
+        && Authorize::authorizeToken( $errors, $result )
         && $this->ChallengeModel->getMyChallenges( $errors, $result, $sort_by )
         && $this->ImagesModel->addImageAs64( $errors, $result ) ) {
             $this->responseCode(200);
-            $this->printJSON( ['success' => true, 'result' => $result, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */] );
+            $this->printJSON( ['success' => true, 'result' => $result['results'], 'jwt' => Authorize::createToken( $result['user_id'] )] );
         } else {
             $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] ); 
@@ -88,10 +89,10 @@ final class Challenges extends AbstractController {
 
 
         if ($this->isMethod( self::METHOD_PUT)
-        // && Authorize::authorizeToken( $errors, $result )
+        && Authorize::authorizeToken( $errors, $result )
         && $this->ChallengeModel->update( $errors, $challenge_id )) {
             $this->responseCode(200);
-            $this->printJSON( ['success' => true, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */] );
+            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken( $result['user_id'] )] );
         } else {
             $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] );
@@ -106,10 +107,10 @@ final class Challenges extends AbstractController {
         $result = [];
     
         if ($this->isMethod( self::METHOD_POST) 
-        // && Authorize::authorizeToken( $errors, $result )
-        && $this->ChallengeModel->write( 2, $errors )) {
+        && Authorize::authorizeToken( $errors, $result )
+        && $this->ChallengeModel->write( $result['user_id'], $errors )) {
             $this->responseCode(201);
-            $this->printJSON( ['success' => true, /* 'jwt' => Authorize::createToken( $result['user_id'] ) */] );
+            $this->printJSON( ['success' => true, 'jwt' => Authorize::createToken( $result['user_id'] )] );
         } else {
             $this->responseCode(400);
             $this->printJSON( ['errors' => $errors] );

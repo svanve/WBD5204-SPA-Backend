@@ -31,6 +31,7 @@ abstract class Authorize {
             return FALSE;
         }
 
+
         try {
             /** @var array $token */
             $token = self::getToken();

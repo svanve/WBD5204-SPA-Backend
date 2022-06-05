@@ -12,9 +12,9 @@ final class Questions extends AbstractModel {
 
         $statement = $this->Database->prepare($query);
         $statement->execute();
-        $results = $statement->fetchAll();
 
+        $results['results'] = $statement->fetchAll();
 
-        return count( $results ) > 0;
+        return count( $results['results'] ) > 0;
     }
 }

@@ -12,8 +12,8 @@ final class Pokemons extends AbstractModel {
 
         $statement = $this->Database->prepare($query);
         $statement->execute();
-        $results = $statement->fetchAll();
-
+        
+        $results['results'] = $statement->fetchAll();
 
         return count( $results ) > 0;
     }

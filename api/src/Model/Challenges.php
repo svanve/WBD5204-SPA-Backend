@@ -82,13 +82,11 @@ final class Challenges extends AbstractModel {
 
             ORDER BY' . ' ' .$parsed_sort_by . ' ' . 'ASC';
 
-
             $statement = $this->Database->prepare( $query );
-            // $statement->bindValue( 'user_id', Session::get( 'user_id' ) );
-            $statement->bindValue( ':user_id', 2 );
+            $statement->bindValue( ':user_id', $results['user_id'] );
             $statement->execute();
 
-            $results = $statement->fetchAll();
+            $results['results'] = $statement->fetchAll();
 
             return count( $results ) > 0;
         } else {
@@ -102,7 +100,7 @@ final class Challenges extends AbstractModel {
         $sanitized_sort_by = str_replace( ' ', '', (strtolower( $sort_by )) );
         /** @var bool $validate_sort_by */
         $validate_sort_by = $this->validateSortBy( $errors, $sanitized_sort_by );
-    
+
         if( $validate_sort_by ) {
             
             /** @var string $parse_sort_by */
@@ -153,10 +151,11 @@ final class Challenges extends AbstractModel {
 
             $statement = $this->Database->prepare( $query );
             // $statement->bindValue( 'user_id', Session::get( 'user_id' ) );
-            $statement->bindValue( 'user_id', 2 );
+            $statement->bindValue( 'user_id', $results['user_id'] );
             $statement->execute();
 
-            $results = $statement->fetchAll();
+            $results['results'] = $statement->fetchAll();
+            // $results = $statement->fetchAll();
 
             return count( $results ) > 0;
         } else {
@@ -290,6 +289,8 @@ final class Challenges extends AbstractModel {
 
     public function write( string $user_id, array &$errors = [] ) : bool {
 
+        var_dump($_POST);
+
         //get input
         /** @var ?string $input_pokemon_id */
         $input_pokemon_id = filter_input( INPUT_POST, 'pokemon_id');
@@ -299,6 +300,9 @@ final class Challenges extends AbstractModel {
         $input_title = filter_input( INPUT_POST, 'title');
         /** @var ?string $input_description */
         $input_description = filter_input( INPUT_POST, 'description');
+
+        // var_dump($input_pokemon_id);
+        // var_dump($input_question_id);
 
         /** @var bool $validate_user_id */
         $validate_user_id = $this->validateUserId( $errors, $user_id );

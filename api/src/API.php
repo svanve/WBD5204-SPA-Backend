@@ -3,6 +3,7 @@
 namespace WBD5204;
 
 use WBD5204\Session as Session;
+use WBD5204\Controller as AbstractController;
 
 final class API {
     const ERROR_CONTROLLER = 'API\\Controller\\Error';
@@ -20,10 +21,13 @@ final class API {
     public function run() : void {
         
         header("Access-Control-Allow-Origin: *");
+        header('Access-Control-Allow-Headers: *');
         header('Access-Control-Allow-Methods: *');
-        header('Access-Control-Allow-Headers: Content-Type');
-        header('Access-Control-Allow-Credentials: true');
 
+        if ( $_SERVER['REQUEST_METHOD'] === 'OPTIONS' ) {
+            $this->responseCode('200');
+        }    
+        // header('Access-Control-Allow-Credentials: true');    
 
         // URL auslesen
         if ( $this->controllerExists() && $this->controllerMethodExists() ) {

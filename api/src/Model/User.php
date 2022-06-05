@@ -164,8 +164,6 @@ final class User extends AbstractModel {
 
             $result['user_id'] = $credentials['id'];
             
-            // Session::set('user_id', $credentials['id']);
-            
             return $compare_passwords;
         }
         else {
@@ -183,9 +181,7 @@ final class User extends AbstractModel {
 
     public function logout( array &$errors = [], array &$success = [] ) : bool {
 
-        Session::delete('user_id');
-
-        if (!isset($_SESSION['user_id'])) {
+        if ( !Authorize::authorizeToken( $errors ) ) {
             $success['logout'][] = 'Du wurdest erfolgreich ausgeloggt.';
             
             return TRUE;
@@ -217,7 +213,8 @@ final class User extends AbstractModel {
         $statement = $this->Database->prepare($query);
         $statement->bindValue( ':id', 2 );
         $statement->execute();
-        $result = $statement->fetchAll();
+
+        $result['results'] = $statement->fetchAll();
 
         return count( $result ) > 0;
     }
