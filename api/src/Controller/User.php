@@ -42,7 +42,7 @@ final class User extends AbstractController {
 
         if( $this->isMethod(self::METHOD_GET) 
         && Authorize::authorizeToken( $errors, $result )
-        && $this->user->getProfile($errors, $result, 2) 
+        && $this->user->getProfile($errors, $result, $result['user_id']) 
         && $this->ImagesModel->addImageAs64($errors, $result) ) {
             $this->responseCode( 200 );
             $this->printJSON( ['success' => true, 'result' => $result['results'], 'jwt' => Authorize::createToken( $result['user_id'] )] );
