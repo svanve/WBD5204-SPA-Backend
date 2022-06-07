@@ -87,7 +87,6 @@ final class Challenges extends AbstractController {
         /** @var array $errors */
         $errors = [];
 
-
         if ($this->isMethod( self::METHOD_PUT)
         && Authorize::authorizeToken( $errors, $result )
         && $this->ChallengeModel->update( $errors, $challenge_id )) {
