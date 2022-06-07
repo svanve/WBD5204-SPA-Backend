@@ -211,7 +211,7 @@ final class User extends AbstractModel {
         WHERE u.id = :id'; 
 
         $statement = $this->Database->prepare($query);
-        $statement->bindValue( ':id', 2 );
+        $statement->bindValue( ':id', $user_id );
         $statement->execute();
 
         $result['results'] = $statement->fetchAll();
